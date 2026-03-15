@@ -1,0 +1,46 @@
+product_type,recommended_style,color_mood,typography_mood,key_effects,anti_patterns,severity
+SaaS (General),Hero + Features + CTA,Trust blue + Orange CTA,Clean geometric sans-serif,Glassmorphism cards hover lift,Cluttered hero with too many CTAs,HIGH
+SaaS (Enterprise),Conversion-Optimized Dashboard,Deep blue + Amber accents,Professional stable sans-serif,Subtle shadows card hierarchy,Playful animations in serious contexts,HIGH
+SaaS (Startup),Bold gradient hero,Purple gradient + Orange CTA,Modern geometric sans-serif,Animated gradients micro-interactions,Generic stock photos in hero,MEDIUM
+E-commerce (General),Product-Grid Focus,Green trust + Orange urgency,Clean scannable sans-serif,Hover zoom quick-view overlays,Auto-playing video on product pages,HIGH
+E-commerce (Fashion),Visual-First Editorial,Dark minimal + Pink accent,Editorial serif headlines,Parallax scrolling image transitions,Cluttered product pages with too many badges,HIGH
+E-commerce (Electronics),Spec-Comparison Layout,Blue trust + Red deals,Technical clean sans-serif,Comparison tables hover highlights,Missing technical specifications,HIGH
+E-commerce (Luxury),Whitespace-Heavy Minimal,Black gold minimal,Elegant thin serif,Smooth scroll reveal animations,Discount badges and flash sale banners,HIGH
+Fintech/Crypto,Conversion-Optimized,Deep purple + Amber accents,Modern sans-serif sharp,Dark mode glassmorphism data viz,Light backgrounds reduce trust perception,MEDIUM
+Fintech (Banking),Trust-First Clean,Teal trust + Green success,Professional stable sans-serif,Subtle transitions secure indicators,Flashy animations reduce perceived security,HIGH
+Fintech (Insurance),Reassurance Layout,Blue calm + Green action,Warm trustworthy sans-serif,Progressive disclosure smooth forms,Complex jargon without explanations,HIGH
+Healthcare App,Clean Clinical,Cyan calm + Green action,Clinical clear sans-serif,Smooth transitions accessible motion,Red as primary color triggers anxiety,HIGH
+Healthcare (Telehealth),Friendly Professional,Teal warm + Blue action,Friendly readable sans-serif,Video-ready layouts subtle animations,Cold clinical aesthetic for patient-facing,MEDIUM
+Healthcare (Fitness),Energetic Dashboard,Purple energy + Orange motivation,Bold dynamic sans-serif,Progress animations data visualization,Overwhelming data without hierarchy,MEDIUM
+Restaurant/Food,Menu-First Visual,Warm red + Gold accents,Friendly rounded serif,Food photography parallax hover effects,Stock photos instead of real food,HIGH
+Restaurant (Fine Dining),Elegant Minimal,Dark brown + Gold luxury,Elegant classic serif,Subtle reveal animations,Cluttered menus with too many items visible,HIGH
+Restaurant (Fast Casual),Fun Vibrant,Orange energy + Green fresh,Playful rounded sans-serif,Bouncy micro-interactions,Slow loading food images,HIGH
+Coffee/Cafe,Warm Artisanal,Brown warm + Gold accent,Earthy warm serif,Parallax coffee imagery smooth scroll,Generic chain-restaurant aesthetic,MEDIUM
+Luxury/Premium,Whitespace Editorial,Black + Gold minimal,Thin elegant serif,Reveal animations smooth scroll,Bright colors and busy patterns,HIGH
+Education (K-12),Friendly Colorful,Blue trust + Yellow energy,Friendly rounded sans-serif,Playful transitions gamification,Text-heavy pages without visual breaks,HIGH
+Education (EdTech),Modern Learning,Purple innovation + Orange engagement,Modern clean sans-serif,Progress indicators interactive elements,Overwhelming content without structure,HIGH
+Real Estate,Property Showcase,Teal trust + Gold premium,Modern premium sans-serif,Map interactions image galleries,Low-quality property photos,HIGH
+Real Estate (Luxury),Premium Gallery,Black + Gold luxury,Thin elegant serif,Full-screen galleries smooth transitions,Cluttered listings with small images,HIGH
+Travel/Tourism,Immersive Visual,Blue sky + Orange adventure,Open adventurous sans-serif,Full-width imagery parallax scroll,Text-heavy pages instead of visual storytelling,HIGH
+Fitness/Gym,Bold Energetic,Red energy + Yellow power,Bold impact display,Dynamic transitions progress bars,Passive calm aesthetic for active brand,MEDIUM
+Fitness (Yoga/Wellness),Calm Minimal,Teal calm + Purple spiritual,Soft rounded sans-serif,Gentle transitions breathing animations,Aggressive bold design for wellness,HIGH
+Legal Services,Authority Trust,Navy authority + Gold accent,Formal serif headings,Subtle professional transitions,Playful or casual design elements,HIGH
+Accounting/Finance,Clean Professional,Teal professional + Blue action,Clean stable sans-serif,Data tables subtle animations,Flashy design that undermines credibility,HIGH
+Non-Profit/Charity,Emotional Storytelling,Green hope + Orange action,Warm humanist serif-sans,Story scroll impact counters,Corporate cold aesthetic,HIGH
+Gaming,Immersive Dark,Purple glow + Red accent,Futuristic bold display,Particle effects glow animations,Clean minimal corporate look,HIGH
+Music/Entertainment,Visual Rhythm,Pink vibrant + Gold accent,Edgy creative display,Audio visualizers scroll animations,Static boring layouts,MEDIUM
+Photography/Portfolio,Gallery Minimal,Black minimal + Orange accent,Minimal thin sans-serif,Masonry grid lightbox transitions,Cluttered layout competing with photos,HIGH
+Agency/Creative,Bold Experimental,Purple creative + Orange energy,Creative expressive display,Custom cursor scroll animations,Safe generic corporate template look,HIGH
+Consulting,Professional Authority,Blue trust + Amber accent,Professional stable sans-serif,Subtle transitions case study reveals,Overly creative design that distracts,MEDIUM
+Media/News,Content Hierarchy,Red urgency + Blue links,Readable editorial serif-sans,Infinite scroll lazy loading,Auto-playing video with sound,HIGH
+Social Media App,Engaging Colorful,Purple social + Pink accent,Modern rounded sans-serif,Smooth transitions pull-to-refresh,Cluttered feeds without visual hierarchy,HIGH
+Marketplace,Trust Grid,Green trust + Orange deals,Clean scannable sans-serif,Filter animations product hover,Missing seller trust indicators,HIGH
+Automotive,Premium Showcase,Black premium + Red accent,Bold modern sans-serif,360 views smooth image galleries,Cheap-looking layouts for premium products,HIGH
+Pet/Veterinary,Warm Friendly,Yellow warm + Green health,Friendly rounded sans-serif,Playful micro-interactions,Clinical cold aesthetic for pet owners,MEDIUM
+Wedding/Events,Romantic Elegant,Pink romantic + Gold accent,Romantic elegant serif,Gentle parallax flower animations,Bold aggressive design for weddings,HIGH
+Kids/Children,Playful Colorful,Blue safe + Yellow fun,Playful rounded sans-serif,Bouncy animations character movements,Small text and complex navigation,HIGH
+Productivity App,Clean Focused,Blue focus + Green success,Clean minimal sans-serif,Smooth transitions subtle feedback,Visual clutter that breaks focus,HIGH
+Developer Tools,Dark Technical,Dark bg + Cyan accent,Monospace technical,Code syntax highlighting terminal effects,Light mode only without dark option,MEDIUM
+AI/ML Platform,Futuristic Gradient,Purple AI + Cyan tech,Modern geometric sans-serif,Gradient animations data flow viz,Overhyping AI with generic robot imagery,HIGH
+Sustainability/Green,Natural Organic,Green nature + Amber earth,Earthy natural serif-sans,Nature imagery smooth transitions,Greenwashing with excessive green color,MEDIUM
+Beauty/Cosmetics,Soft Glamorous,Pink soft + Gold glamour,Elegant soft serif-sans,Product reveal hover effects,Harsh industrial aesthetic,HIGH

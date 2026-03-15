@@ -1,0 +1,21 @@
+data_type,best_chart,colors,accessibility,library
+Time series trends,Line chart with area fill,Primary for main line; secondary for comparison; light fill below line,Include data table alternative; use patterns not just color; label axes clearly,Recharts or Chart.js with time axis
+Part-to-whole composition,Donut chart or treemap,Sequential palette from primary to lighter shades; max 6-7 segments,Label segments directly; avoid relying on legend colors alone; provide percentages,Recharts PieChart or D3.js treemap
+Comparison across categories,Horizontal bar chart,Primary for main bars; secondary for comparison; CTA for highlight,Sort bars by value; label bars directly; include value labels on bars,Recharts BarChart or Visx
+Distribution/frequency,Histogram or box plot,Primary fill with darker border; secondary for median line,Include summary statistics; label axes; add reference lines for mean/median,D3.js or Visx for statistical charts
+Correlation between variables,Scatter plot,Primary for dots; size for third variable; CTA for outliers,Ensure dots are large enough (min 8px); add trend line; tooltip on hover,Recharts ScatterChart or D3.js
+Geographic/location data,Choropleth map or bubble map,Sequential color scale from light to dark primary; diverging for positive/negative,Provide data table alternative; use pattern fills; ensure color scale is perceptible,React Simple Maps or Mapbox GL
+Ranking/leaderboard,Horizontal bar chart sorted,Primary gradient from dark to light; CTA for top item; gray for others,Number each rank; show values; use consistent bar height,Recharts BarChart sorted
+Progress/completion,Progress bar or gauge,Primary for completed; light gray for remaining; CTA at milestones,Show percentage as text; use aria-valuenow; animate smoothly,Custom CSS or Recharts RadialBar
+Flow/process,Sankey or flow diagram,Distinct colors per source; opacity for flow paths; primary for main flow,Label all nodes; show values on flows; provide text summary,D3-sankey or React Flow
+Hierarchical data,Treemap or sunburst,Category colors with lightness variation for depth; border for separation,Label all visible segments; provide drill-down; show breadcrumb path,D3.js treemap or Recharts Treemap
+Real-time data,Sparkline or live line chart,Primary line on minimal background; red/green for threshold alerts,Update smoothly not abruptly; show last value prominently; include timestamp,Recharts with real-time data or Visx sparkline
+Budget/financial,Stacked bar or waterfall,Green for positive; red for negative; gray for neutral; primary for totals,Label each segment; show running total; include legend,Recharts StackedBar or D3.js waterfall
+User funnel/conversion,Funnel chart,Sequential primary shades darkest at top; CTA for conversion step,Label each stage with count and percentage; show drop-off rates,Custom CSS funnel or D3.js
+Survey/rating data,Likert scale or diverging bar,Green for positive; red for negative; gray for neutral; center-aligned,Show counts and percentages; center on neutral; clear labels,D3.js diverging bar or custom Recharts
+Schedule/timeline,Gantt chart or timeline,Category colors for different types; primary for current; gray for completed,Label all items; show dates; allow zoom; keyboard navigable,React Timeline or Visx
+KPI dashboard,Card grid with sparklines,Primary for positive KPIs; red for negative; green for targets met,Show actual numbers prominently; include trend direction; label clearly,Recharts sparkline in card components
+Network/relationship,Node-link diagram or matrix,Primary for nodes; secondary for edges; CTA for selected/highlighted,Provide zoom and filter; label important nodes; show connection count,React Force Graph or D3-force
+Multi-metric comparison,Radar/spider chart,Primary fill with low opacity; secondary for comparison; max 3 overlays,Limit to 5-8 axes; label all axes; show values on hover,Recharts RadarChart
+Text/categorical frequency,Word cloud or bar chart,Size and color intensity for frequency; primary color family,Provide sorted list alternative; limit to top 30-50 terms; show counts,React Wordcloud or D3-cloud
+Before-after comparison,Paired bar chart or slope chart,Primary for before; CTA for after; connecting lines between pairs,Label both values; show change direction; highlight significant changes,Recharts grouped bars or custom SVG
