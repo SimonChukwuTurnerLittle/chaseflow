@@ -3,7 +3,13 @@
     "allow": [
       "Bash(mvn compile:*)",
       "Bash(where mvn:*)",
-      "Bash(where mvn.cmd)"
+      "Bash(where mvn.cmd)",
+      "Bash(python scripts/search.py \"CRM SaaS dashboard B2B business professional clean\" --design-system --persist -p \"Chaseflow\")",
+      "Bash(python .claude/skills/ui-ux-pro-max/scripts/search.py \"CRM SaaS dashboard B2B business professional clean\" --design-system --persist -p \"Chaseflow\")",
+      "Bash(python .claude/skills/ui-ux-pro-max/scripts/search.py \"dashboard table form modal sidebar\" --stack react)",
+      "Bash(ls \"/c/Users/Simon Chukwu/Documents/chaseflow/frontend/src/pages/\"*/)",
+      "Bash(ls \"/c/Users/Simon Chukwu/Documents/chaseflow/frontend/src/layouts/\"*)",
+      "Bash(npx vite:*)"
     ]
   }
 }
