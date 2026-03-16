@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -6,7 +7,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
-import { useCreateLead } from '@/hooks/useLeads';
+import { useUpdateLead } from '@/hooks/useLeads';
 
 const schema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -47,12 +48,14 @@ const RATING_OPTIONS = [
   { value: 'COLD', label: 'Cold' },
 ];
 
-export function CreateLeadModal({ open, onClose }) {
-  const createLead = useCreateLead();
+export function EditLeadModal({ open, onClose, lead }) {
+  const updateLead = useUpdateLead();
+  const contact = lead?.contactDetails ?? {};
 
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(schema),
@@ -74,22 +77,43 @@ export function CreateLeadModal({ open, onClose }) {
     },
   });
 
+  useEffect(() => {
+    if (lead) {
+      reset({
+        firstName: lead.firstName ?? '',
+        lastName: lead.lastName ?? '',
+        source: lead.source ?? '',
+        rating: lead.rating ?? '',
+        handler: lead.handler ?? '',
+        email: contact.email ?? '',
+        phone: contact.phone ?? '',
+        mobile: contact.mobile ?? '',
+        whatsapp: contact.whatsapp ?? '',
+        addressLine: contact.addressLine ?? '',
+        postcode: contact.postcode ?? '',
+        city: contact.city ?? '',
+        county: contact.county ?? '',
+        country: contact.country ?? '',
+      });
+    }
+  }, [lead, reset]);
+
   function onSubmit(data) {
-    // Strip empty optional strings
     const payload = Object.fromEntries(
       Object.entries(data).filter(([, v]) => v !== '')
     );
 
-    createLead.mutate(payload, {
-      onSuccess: () => onClose(),
-    });
+    updateLead.mutate(
+      { id: lead.id, data: payload },
+      { onSuccess: () => onClose() }
+    );
   }
 
   return (
     <Modal
       open={open}
       onClose={onClose}
-      title="Create Lead"
+      title="Edit Lead"
       size="md"
       footer={
         <>
@@ -98,26 +122,25 @@ export function CreateLeadModal({ open, onClose }) {
           </Button>
           <Button
             onClick={handleSubmit(onSubmit)}
-            loading={createLead.isPending}
+            loading={updateLead.isPending}
           >
-            Create Lead
+            Save Changes
           </Button>
         </>
       }
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        {/* Lead info section */}
         <div className="grid grid-cols-2 gap-4">
           <Input
             label="First name *"
-            id="firstName"
+            id="edit-firstName"
             placeholder="First name"
             error={errors.firstName?.message}
             {...register('firstName')}
           />
           <Input
             label="Last name"
-            id="lastName"
+            id="edit-lastName"
             placeholder="Last name"
             {...register('lastName')}
           />
@@ -125,7 +148,7 @@ export function CreateLeadModal({ open, onClose }) {
 
         <Select
           label="Source *"
-          id="source"
+          id="edit-source"
           placeholder="Select source"
           options={SOURCE_OPTIONS}
           error={errors.source?.message}
@@ -135,14 +158,14 @@ export function CreateLeadModal({ open, onClose }) {
         <div className="grid grid-cols-2 gap-4">
           <Select
             label="Rating"
-            id="rating"
+            id="edit-rating"
             placeholder="Select rating"
             options={RATING_OPTIONS}
             {...register('rating')}
           />
           <Input
             label="Handler"
-            id="handler"
+            id="edit-handler"
             placeholder="Handler name"
             {...register('handler')}
           />
@@ -150,13 +173,12 @@ export function CreateLeadModal({ open, onClose }) {
 
         <hr className="border-slate-200" />
 
-        {/* Contact details section */}
         <p className="text-sm font-medium text-primary">Contact Details</p>
 
         <div className="grid grid-cols-2 gap-4">
           <Input
             label="Email"
-            id="email"
+            id="edit-email"
             type="email"
             placeholder="email@example.com"
             error={errors.email?.message}
@@ -164,19 +186,19 @@ export function CreateLeadModal({ open, onClose }) {
           />
           <Input
             label="Phone"
-            id="phone"
+            id="edit-phone"
             placeholder="Phone number"
             {...register('phone')}
           />
           <Input
             label="Mobile"
-            id="mobile"
+            id="edit-mobile"
             placeholder="Mobile number"
             {...register('mobile')}
           />
           <Input
             label="WhatsApp"
-            id="whatsapp"
+            id="edit-whatsapp"
             placeholder="WhatsApp number"
             {...register('whatsapp')}
           />
@@ -184,34 +206,33 @@ export function CreateLeadModal({ open, onClose }) {
 
         <Input
           label="Address"
-          id="addressLine"
+          id="edit-addressLine"
           placeholder="Address line"
-          className="col-span-2"
           {...register('addressLine')}
         />
 
         <div className="grid grid-cols-2 gap-4">
           <Input
             label="Postcode"
-            id="postcode"
+            id="edit-postcode"
             placeholder="Postcode"
             {...register('postcode')}
           />
           <Input
             label="City"
-            id="city"
+            id="edit-city"
             placeholder="City"
             {...register('city')}
           />
           <Input
             label="County"
-            id="county"
+            id="edit-county"
             placeholder="County"
             {...register('county')}
           />
           <Input
             label="Country"
-            id="country"
+            id="edit-country"
             placeholder="Country"
             {...register('country')}
           />

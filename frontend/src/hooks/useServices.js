@@ -6,7 +6,7 @@ import * as categoriesApi from '../api/categoriesApi';
 export const useServices = () => {
   return useQuery({
     queryKey: ['services'],
-    queryFn: () => servicesApi.getServices(),
+    queryFn: () => servicesApi.getServices().then(res => res.data),
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Something went wrong');
     },
@@ -16,7 +16,7 @@ export const useServices = () => {
 export const useService = (id) => {
   return useQuery({
     queryKey: ['services', id],
-    queryFn: () => servicesApi.getService(id),
+    queryFn: () => servicesApi.getService(id).then(res => res.data),
     enabled: !!id,
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Something went wrong');
@@ -70,7 +70,7 @@ export const useDeleteService = () => {
 export const useCategories = () => {
   return useQuery({
     queryKey: ['categories'],
-    queryFn: () => categoriesApi.getCategories(),
+    queryFn: () => categoriesApi.getCategories().then(res => res.data),
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Something went wrong');
     },

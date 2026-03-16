@@ -11,7 +11,7 @@ export const useLogin = () => {
   return useMutation({
     mutationFn: ({ email, password }) => authApi.login(email, password),
     onSuccess: (res) => {
-      const { user, token } = res.data;
+      const { token, ...user } = res.data;
       setAuth(user, token);
       navigate('/dashboard');
     },
@@ -42,10 +42,11 @@ export const useMe = () => {
 
   return useQuery({
     queryKey: ['me'],
-    queryFn: () => authApi.getMe(),
+    queryFn: () => authApi.getMe().then(res => res.data),
     enabled: !!token,
-    onSuccess: (res) => {
-      setUser(res.data);
+    select: (data) => {
+      setUser(data);
+      return data;
     },
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Something went wrong');

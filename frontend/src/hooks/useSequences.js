@@ -6,7 +6,7 @@ import * as templatesApi from '../api/templatesApi';
 export const useSequences = (serviceId) => {
   return useQuery({
     queryKey: ['sequences', serviceId],
-    queryFn: () => sequencesApi.getSequences(serviceId),
+    queryFn: () => sequencesApi.getSequences(serviceId).then(res => res.data),
     enabled: !!serviceId,
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Something went wrong');

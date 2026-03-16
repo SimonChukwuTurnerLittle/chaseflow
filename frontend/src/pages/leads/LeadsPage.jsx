@@ -1,8 +1,7 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Search, X, Pencil, Trash2, UserPlus } from 'lucide-react';
+import { Plus, X, Pencil, Trash2, UserPlus } from 'lucide-react';
 import { format } from 'date-fns';
-import clsx from 'clsx';
 
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -24,56 +23,33 @@ const SOURCE_OPTIONS = [
   { value: 'Other', label: 'Other' },
 ];
 
-const RATING_OPTIONS = [
-  { value: 'HOT', label: 'Hot' },
-  { value: 'WARM', label: 'Warm' },
-  { value: 'COLD', label: 'Cold' },
-];
 
 export default function LeadsPage() {
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [source, setSource] = useState('');
-  const [rating, setRating] = useState('');
-  const [handler, setHandler] = useState('');
   const [createOpen, setCreateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const deleteLead = useDeleteLead();
 
-  // Debounce search input by 300ms
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(search);
-      setPage(1);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [search]);
-
   const params = useMemo(
     () => ({
-      page,
-      search: debouncedSearch || undefined,
+      page: page - 1,
+      size: 20,
       source: source || undefined,
-      rating: rating || undefined,
-      handler: handler || undefined,
     }),
-    [page, debouncedSearch, source, rating, handler]
+    [page, source]
   );
 
   const { data, isLoading } = useLeads(params);
 
-  const leads = data?.data ?? data?.leads ?? [];
+  const leads = data?.content ?? [];
   const totalPages = data?.totalPages ?? 1;
 
-  const hasFilters = search || source || rating || handler;
+  const hasFilters = !!source;
 
   function clearFilters() {
-    setSearch('');
     setSource('');
-    setRating('');
-    setHandler('');
     setPage(1);
   }
 
@@ -97,8 +73,16 @@ export default function LeadsPage() {
         </Link>
       ),
     },
-    { key: 'email', label: 'Email' },
-    { key: 'phone', label: 'Phone' },
+    {
+      key: 'email',
+      label: 'Email',
+      render: (_, row) => row.contactDetails?.email || '—',
+    },
+    {
+      key: 'phone',
+      label: 'Phone',
+      render: (_, row) => row.contactDetails?.phone || '—',
+    },
     {
       key: 'source',
       label: 'Source',
@@ -115,7 +99,7 @@ export default function LeadsPage() {
       render: (val) => val || '—',
     },
     {
-      key: 'createdAt',
+      key: 'dateCreated',
       label: 'Date Created',
       render: (val) =>
         val ? format(new Date(val), 'MMM d, yyyy') : '—',
@@ -153,26 +137,7 @@ export default function LeadsPage() {
 
       {/* Filter bar */}
       <div className="bg-white rounded-xl p-4 shadow-card mb-6">
-        <div className="flex flex-wrap gap-3">
-          <div className="relative w-64">
-            <Search
-              size={16}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-            />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search leads..."
-              className={clsx(
-                'w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm outline-none',
-                'transition-all duration-200',
-                'focus:ring-2 focus:ring-primary/20 focus:border-primary',
-                'placeholder:text-slate-400'
-              )}
-            />
-          </div>
-
+        <div className="flex flex-wrap gap-3 items-center">
           <Select
             value={source}
             onChange={(e) => {
@@ -181,32 +146,6 @@ export default function LeadsPage() {
             }}
             placeholder="All sources"
             options={SOURCE_OPTIONS}
-          />
-
-          <Select
-            value={rating}
-            onChange={(e) => {
-              setRating(e.target.value);
-              setPage(1);
-            }}
-            placeholder="All ratings"
-            options={RATING_OPTIONS}
-          />
-
-          <input
-            type="text"
-            value={handler}
-            onChange={(e) => {
-              setHandler(e.target.value);
-              setPage(1);
-            }}
-            placeholder="All handlers"
-            className={clsx(
-              'px-3 py-2 border border-slate-300 rounded-lg text-sm outline-none',
-              'transition-all duration-200',
-              'focus:ring-2 focus:ring-primary/20 focus:border-primary',
-              'placeholder:text-slate-400'
-            )}
           />
 
           {hasFilters && (

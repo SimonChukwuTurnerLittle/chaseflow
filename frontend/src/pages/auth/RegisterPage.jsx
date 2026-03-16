@@ -9,8 +9,8 @@ import { useRegister } from '@/hooks/useAuth';
 
 const registerSchema = z
   .object({
-    businessName: z.string().min(1, 'Business name is required'),
-    name: z.string().min(1, 'Your name is required'),
+    tenantName: z.string().min(1, 'Business name is required'),
+    username: z.string().min(1, 'Your name is required'),
     email: z.string().email('Valid email required'),
     password: z.string().min(8, 'Password must be at least 8 characters'),
     confirmPassword: z.string().min(1, 'Please confirm your password'),
@@ -30,8 +30,8 @@ export default function RegisterPage() {
   } = useForm({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      businessName: '',
-      name: '',
+      tenantName: '',
+      username: '',
       email: '',
       password: '',
       confirmPassword: '',
@@ -40,6 +40,13 @@ export default function RegisterPage() {
 
   const onSubmit = (data) => {
     const { confirmPassword, ...payload } = data;
+    // Generate slug from business name: lowercase, hyphens, no special chars
+    payload.tenantSlug = payload.tenantName
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .trim();
     registerUser(payload);
   };
 
@@ -56,19 +63,21 @@ export default function RegisterPage() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
         <Input
-          id="businessName"
+          id="tenantName"
           label="Business name"
+          autoComplete="organization"
           placeholder="Acme Inc."
-          error={errors.businessName?.message}
-          {...register('businessName')}
+          error={errors.tenantName?.message}
+          {...register('tenantName')}
         />
 
         <Input
-          id="name"
+          id="username"
           label="Your name"
+          autoComplete="name"
           placeholder="Jane Doe"
-          error={errors.name?.message}
-          {...register('name')}
+          error={errors.username?.message}
+          {...register('username')}
         />
 
         <Input

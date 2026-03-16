@@ -7,9 +7,16 @@ import {
   Upload,
   Download,
   Eye,
-  UserPlus,
   FileText,
   Clock,
+  Target,
+  StickyNote,
+  Paperclip,
+  Mail,
+  Phone,
+  Smartphone,
+  MessageCircle,
+  MapPin,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
@@ -21,7 +28,6 @@ import { Table } from '@/components/ui/Table';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Spinner } from '@/components/ui/Spinner';
-import { PageHeader } from '@/components/shared/PageHeader';
 import { TemperatureBadge } from '@/components/shared/TemperatureBadge';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { ActivityTimeline } from '@/components/shared/ActivityTimeline';
@@ -36,6 +42,8 @@ import {
 import * as activitiesApi from '@/api/activitiesApi';
 import * as leadsApi from '@/api/leadsApi';
 import { AddNoteModal } from './modals/AddNoteModal';
+import { EditLeadModal } from './modals/EditLeadModal';
+import { CreateOpportunityModal } from '@/pages/opportunities/modals/CreateOpportunityModal';
 
 function formatBytes(bytes) {
   if (!bytes || bytes === 0) return '0 B';
@@ -45,16 +53,10 @@ function formatBytes(bytes) {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
 }
 
-const CONTACT_FIELDS = [
-  { key: 'email', label: 'Email' },
-  { key: 'phone', label: 'Phone' },
-  { key: 'mobile', label: 'Mobile' },
-  { key: 'whatsapp', label: 'WhatsApp' },
-  { key: 'address', label: 'Address' },
-  { key: 'postcode', label: 'Postcode' },
-  { key: 'city', label: 'City' },
-  { key: 'county', label: 'County' },
-  { key: 'country', label: 'Country' },
+const TABS = [
+  { key: 'opportunities', label: 'Opportunities', icon: Target },
+  { key: 'notes', label: 'Notes', icon: StickyNote },
+  { key: 'files', label: 'Files', icon: Paperclip },
 ];
 
 export default function LeadDetailPage() {
@@ -62,13 +64,13 @@ export default function LeadDetailPage() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
-  const { data: leadData, isLoading: leadLoading } = useLead(id);
+  const { data: lead, isLoading: leadLoading } = useLead(id);
   const { data: notesData } = useLeadNotes(id);
   const { data: filesData } = useLeadFiles(id);
 
   const { data: activitiesData } = useQuery({
     queryKey: ['leads', id, 'activities'],
-    queryFn: () => activitiesApi.getLeadActivities(id),
+    queryFn: () => activitiesApi.getLeadActivities(id).then((res) => res.data),
     enabled: !!id,
   });
 
@@ -76,18 +78,27 @@ export default function LeadDetailPage() {
   const uploadFile = useUploadFile();
   const deleteFile = useDeleteFile();
 
+  const [activeTab, setActiveTab] = useState('opportunities');
   const [deleteLeadOpen, setDeleteLeadOpen] = useState(false);
   const [deleteFileTarget, setDeleteFileTarget] = useState(null);
   const [noteModalOpen, setNoteModalOpen] = useState(false);
+  const [editLeadOpen, setEditLeadOpen] = useState(false);
+  const [createOppOpen, setCreateOppOpen] = useState(false);
 
-  const lead = leadData?.data ?? leadData ?? {};
-  const notes = notesData?.data ?? notesData ?? [];
-  const files = filesData?.data ?? filesData ?? [];
-  const activities = activitiesData?.data ?? activitiesData ?? [];
-  const opportunities = lead.opportunities ?? [];
+  const leadData = lead ?? {};
+  const contact = leadData.contactDetails ?? {};
+  const notes = Array.isArray(notesData) ? notesData : notesData?.content ?? [];
+  const files = Array.isArray(filesData) ? filesData : filesData?.content ?? [];
+  const activities = Array.isArray(activitiesData) ? activitiesData : [];
+  const opportunities = leadData.opportunities ?? [];
 
   const fullName =
-    [lead.firstName, lead.lastName].filter(Boolean).join(' ') || 'Lead';
+    [leadData.firstName, leadData.lastName].filter(Boolean).join(' ') || 'Lead';
+
+  const initials = [leadData.firstName?.[0], leadData.lastName?.[0]]
+    .filter(Boolean)
+    .join('')
+    .toUpperCase() || '?';
 
   function handleDeleteLead() {
     deleteLead.mutate(id, {
@@ -131,9 +142,9 @@ export default function LeadDetailPage() {
 
   const opportunityColumns = [
     {
-      key: 'service',
+      key: 'serviceName',
       label: 'Service',
-      render: (val) => val?.name ?? val ?? '—',
+      render: (val) => val || '—',
     },
     {
       key: 'temperature',
@@ -152,7 +163,7 @@ export default function LeadDetailPage() {
     },
     {
       key: 'nextChaseDate',
-      label: 'Next Chase Date',
+      label: 'Next Chase',
       render: (val) => (val ? format(new Date(val), 'MMM d, yyyy') : '—'),
     },
     {
@@ -162,6 +173,7 @@ export default function LeadDetailPage() {
         <Link
           to={`/opportunities/${row.id}`}
           className="p-1.5 rounded-md text-slate-400 hover:text-cta hover:bg-slate-100 transition-colors duration-200 inline-flex"
+          aria-label="View opportunity"
         >
           <Eye size={16} />
         </Link>
@@ -179,212 +191,327 @@ export default function LeadDetailPage() {
 
   return (
     <>
-      {/* Header */}
-      <PageHeader title={fullName}>
-        {lead.source && <Badge variant="info">{lead.source}</Badge>}
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={() => navigate(`/leads/${id}/edit`)}
-        >
-          <Pencil size={14} />
-          Edit
-        </Button>
-        <Button
-          variant="destructive"
-          size="sm"
-          onClick={() => setDeleteLeadOpen(true)}
-        >
-          <Trash2 size={14} />
-          Delete
-        </Button>
-      </PageHeader>
-
-      {/* Two-column layout */}
-      <div className="grid lg:grid-cols-5 gap-6">
-        {/* Left column */}
-        <div className="lg:col-span-3 space-y-6">
-          {/* Contact Details Card */}
-          <div className="bg-white rounded-xl p-6 shadow-card">
-            <h2 className="text-base font-semibold text-primary mb-4">
-              Contact Details
-            </h2>
-            <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-              {CONTACT_FIELDS.map((field) => (
-                <div key={field.key}>
-                  <p className="text-xs text-secondary uppercase tracking-wider mb-1">
-                    {field.label}
-                  </p>
-                  <p className="text-sm font-medium text-primary">
-                    {lead[field.key] || '—'}
-                  </p>
-                </div>
-              ))}
+      {/* ── Lead Header Card ── */}
+      <div className="bg-white rounded-2xl shadow-card p-6 mb-6">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-4">
+            {/* Avatar */}
+            <div className="w-14 h-14 rounded-full bg-cta/10 text-cta flex items-center justify-center text-lg font-bold shrink-0">
+              {initials}
             </div>
-          </div>
-
-          {/* Opportunities Section */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-base font-semibold text-primary">
-                Opportunities
-              </h2>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => navigate(`/opportunities/new?leadId=${id}`)}
-              >
-                <Plus size={14} />
-                Add Opportunity
-              </Button>
-            </div>
-
-            {opportunities.length === 0 ? (
-              <EmptyState
-                icon={FileText}
-                title="No opportunities"
-                description="Create an opportunity linked to this lead"
-              />
-            ) : (
-              <Table
-                columns={opportunityColumns}
-                data={opportunities}
-              />
-            )}
-          </div>
-
-          {/* Notes Section */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-base font-semibold text-primary">Notes</h2>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setNoteModalOpen(true)}
-              >
-                <Plus size={14} />
-                Add Note
-              </Button>
-            </div>
-
-            {notes.length === 0 ? (
-              <EmptyState
-                icon={FileText}
-                title="No notes"
-                description="Add a note to keep track of important details"
-              />
-            ) : (
-              <div className="space-y-2">
-                {notes.map((note) => (
-                  <div
-                    key={note.id}
-                    className="bg-white rounded-lg p-4 shadow-card"
-                  >
-                    <p className="text-sm text-primary">
-                      {note.description}
-                    </p>
-                    <div className="flex items-center gap-2 mt-2">
-                      {note.user && (
-                        <span className="text-xs text-secondary">
-                          by {note.user}
-                        </span>
-                      )}
-                      {note.createdAt && (
-                        <span className="text-xs text-secondary">
-                          {format(new Date(note.createdAt), 'MMM d, yyyy h:mm a')}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
+            <div>
+              <div className="flex items-center gap-3">
+                <h1 className="text-2xl font-bold text-primary">{fullName}</h1>
+                {leadData.source && (
+                  <Badge variant="info">{leadData.source}</Badge>
+                )}
+                {leadData.rating && (
+                  <TemperatureBadge temperature={leadData.rating} />
+                )}
               </div>
-            )}
+              {leadData.handler && (
+                <p className="text-sm text-secondary mt-1">
+                  Handled by <span className="font-medium">{leadData.handler}</span>
+                </p>
+              )}
+              {leadData.dateCreated && (
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Added {format(new Date(leadData.dateCreated), 'MMM d, yyyy')}
+                </p>
+              )}
+            </div>
           </div>
 
-          {/* Files Section */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-base font-semibold text-primary">Files</h2>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <Upload size={14} />
-                Upload
-              </Button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                className="hidden"
-                onChange={handleFileUpload}
-              />
-            </div>
-
-            {files.length === 0 ? (
-              <EmptyState
-                icon={FileText}
-                title="No files"
-                description="Upload files related to this lead"
-              />
-            ) : (
-              <div className="space-y-2">
-                {files.map((file) => (
-                  <div
-                    key={file.id}
-                    className="bg-white rounded-lg p-4 shadow-card flex items-center justify-between"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-primary truncate">
-                        {file.filename || file.name}
-                      </p>
-                      <div className="flex items-center gap-3 mt-1">
-                        {file.fileType && (
-                          <Badge variant="default">{file.fileType}</Badge>
-                        )}
-                        {file.size != null && (
-                          <span className="text-xs text-secondary">
-                            {formatBytes(file.size)}
-                          </span>
-                        )}
-                        {file.createdAt && (
-                          <span className="text-xs text-secondary">
-                            {format(new Date(file.createdAt), 'MMM d, yyyy')}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1 ml-4">
-                      <button
-                        onClick={() => handleDownloadFile(file)}
-                        className="p-1.5 rounded-md text-slate-400 hover:text-cta hover:bg-slate-100 transition-colors duration-200 cursor-pointer"
-                      >
-                        <Download size={16} />
-                      </button>
-                      <button
-                        onClick={() => setDeleteFileTarget(file)}
-                        className="p-1.5 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors duration-200 cursor-pointer"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+          {/* Actions */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setEditLeadOpen(true)}
+            >
+              <Pencil size={14} />
+              Edit
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setDeleteLeadOpen(true)}
+            >
+              <Trash2 size={14} />
+              Delete
+            </Button>
           </div>
         </div>
 
-        {/* Right column */}
+        {/* ── Contact Details Inline ── */}
+        <div className="mt-5 pt-5 border-t border-slate-100">
+          <div className="flex flex-wrap gap-x-8 gap-y-3">
+            {contact.email && (
+              <ContactItem icon={Mail} label="Email" value={contact.email} />
+            )}
+            {contact.phone && (
+              <ContactItem icon={Phone} label="Phone" value={contact.phone} />
+            )}
+            {contact.mobile && (
+              <ContactItem icon={Smartphone} label="Mobile" value={contact.mobile} />
+            )}
+            {contact.whatsapp && (
+              <ContactItem icon={MessageCircle} label="WhatsApp" value={contact.whatsapp} />
+            )}
+            {(contact.addressLine || contact.city || contact.postcode) && (
+              <ContactItem
+                icon={MapPin}
+                label="Address"
+                value={[contact.addressLine, contact.city, contact.postcode, contact.county, contact.country]
+                  .filter(Boolean)
+                  .join(', ')}
+              />
+            )}
+            {!contact.email && !contact.phone && !contact.mobile && !contact.whatsapp && !contact.addressLine && (
+              <p className="text-sm text-slate-400 italic">No contact details added yet</p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Two-column layout ── */}
+      <div className="grid lg:grid-cols-5 gap-6">
+        {/* ── Left column: Tabbed content ── */}
+        <div className="lg:col-span-3">
+          {/* Tab bar */}
+          <div className="bg-white rounded-xl shadow-card">
+            <div className="flex border-b border-slate-200">
+              {TABS.map((tab) => {
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.key;
+                const count =
+                  tab.key === 'opportunities'
+                    ? opportunities.length
+                    : tab.key === 'notes'
+                    ? notes.length
+                    : files.length;
+
+                return (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    className={clsx(
+                      'flex items-center gap-2 px-5 py-3.5 text-sm font-medium transition-colors duration-200 border-b-2 -mb-px cursor-pointer',
+                      isActive
+                        ? 'border-cta text-cta'
+                        : 'border-transparent text-secondary hover:text-primary hover:border-slate-300'
+                    )}
+                  >
+                    <Icon size={16} />
+                    {tab.label}
+                    {count > 0 && (
+                      <span
+                        className={clsx(
+                          'text-xs rounded-full px-1.5 py-0.5 min-w-[20px] text-center',
+                          isActive
+                            ? 'bg-cta/10 text-cta'
+                            : 'bg-slate-100 text-slate-500'
+                        )}
+                      >
+                        {count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Tab content */}
+            <div className="p-5">
+              {/* ── Opportunities Tab ── */}
+              {activeTab === 'opportunities' && (
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="text-sm text-secondary">
+                      Track opportunities linked to this lead
+                    </p>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setCreateOppOpen(true)}
+                    >
+                      <Plus size={14} />
+                      Add Opportunity
+                    </Button>
+                  </div>
+
+                  {opportunities.length === 0 ? (
+                    <EmptyState
+                      icon={Target}
+                      title="No opportunities yet"
+                      description="Create an opportunity to start chasing this lead"
+                    />
+                  ) : (
+                    <Table columns={opportunityColumns} data={opportunities} />
+                  )}
+                </div>
+              )}
+
+              {/* ── Notes Tab ── */}
+              {activeTab === 'notes' && (
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="text-sm text-secondary">
+                      Keep track of important details
+                    </p>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setNoteModalOpen(true)}
+                    >
+                      <Plus size={14} />
+                      Add Note
+                    </Button>
+                  </div>
+
+                  {notes.length === 0 ? (
+                    <EmptyState
+                      icon={StickyNote}
+                      title="No notes yet"
+                      description="Add a note to keep track of important details"
+                    />
+                  ) : (
+                    <div className="space-y-3">
+                      {notes.map((note) => (
+                        <div
+                          key={note.id}
+                          className="bg-slate-50 rounded-lg p-4 border border-slate-100"
+                        >
+                          <p className="text-sm text-primary leading-relaxed">
+                            {note.description}
+                          </p>
+                          <div className="flex items-center gap-3 mt-2.5 pt-2.5 border-t border-slate-100">
+                            {note.user && (
+                              <span className="text-xs text-secondary font-medium">
+                                {note.user}
+                              </span>
+                            )}
+                            {(note.dateAdded || note.createdAt) && (
+                              <span className="text-xs text-slate-400">
+                                {format(
+                                  new Date(note.dateAdded || note.createdAt),
+                                  'MMM d, yyyy · h:mm a'
+                                )}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── Files Tab ── */}
+              {activeTab === 'files' && (
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="text-sm text-secondary">
+                      Documents and attachments
+                    </p>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <Upload size={14} />
+                      Upload
+                    </Button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      className="hidden"
+                      onChange={handleFileUpload}
+                    />
+                  </div>
+
+                  {files.length === 0 ? (
+                    <EmptyState
+                      icon={Paperclip}
+                      title="No files yet"
+                      description="Upload documents related to this lead"
+                    />
+                  ) : (
+                    <div className="space-y-2">
+                      {files.map((file) => (
+                        <div
+                          key={file.id}
+                          className="flex items-center justify-between bg-slate-50 rounded-lg p-3.5 border border-slate-100 group hover:border-slate-200 transition-colors duration-200"
+                        >
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
+                            <div className="w-9 h-9 rounded-lg bg-cta/10 text-cta flex items-center justify-center shrink-0">
+                              <FileText size={16} />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium text-primary truncate">
+                                {file.filename || file.name}
+                              </p>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                {file.fileType && (
+                                  <span className="text-xs text-slate-400 uppercase">
+                                    {file.fileType}
+                                  </span>
+                                )}
+                                {file.fileSize != null && (
+                                  <span className="text-xs text-slate-400">
+                                    {formatBytes(file.fileSize)}
+                                  </span>
+                                )}
+                                {(file.dateAdded || file.createdAt) && (
+                                  <span className="text-xs text-slate-400">
+                                    {format(
+                                      new Date(file.dateAdded || file.createdAt),
+                                      'MMM d, yyyy'
+                                    )}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1 ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            <button
+                              onClick={() => handleDownloadFile(file)}
+                              className="p-1.5 rounded-md text-slate-400 hover:text-cta hover:bg-white transition-colors duration-200 cursor-pointer"
+                              aria-label="Download file"
+                            >
+                              <Download size={16} />
+                            </button>
+                            <button
+                              onClick={() => setDeleteFileTarget(file)}
+                              className="p-1.5 rounded-md text-slate-400 hover:text-red-500 hover:bg-white transition-colors duration-200 cursor-pointer"
+                              aria-label="Delete file"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* ── Right column: Activity Timeline ── */}
         <div className="lg:col-span-2">
-          <div className="sticky top-24">
-            <h2 className="text-lg font-semibold text-primary mb-4">
-              Activity Timeline
-            </h2>
+          <div className="bg-white rounded-xl shadow-card p-5 sticky top-24">
+            <div className="flex items-center gap-2 mb-4">
+              <Clock size={18} className="text-secondary" />
+              <h2 className="text-base font-semibold text-primary">
+                Activity Timeline
+              </h2>
+            </div>
             {activities.length === 0 ? (
               <EmptyState
                 icon={Clock}
-                title="No activity"
+                title="No activity yet"
                 description="Activity for this lead will appear here"
               />
             ) : (
@@ -394,7 +521,7 @@ export default function LeadDetailPage() {
         </div>
       </div>
 
-      {/* Modals */}
+      {/* ── Modals ── */}
       {noteModalOpen && (
         <AddNoteModal
           open={noteModalOpen}
@@ -403,7 +530,22 @@ export default function LeadDetailPage() {
         />
       )}
 
-      {/* Delete Lead Confirmation */}
+      {editLeadOpen && (
+        <EditLeadModal
+          open={editLeadOpen}
+          onClose={() => setEditLeadOpen(false)}
+          lead={leadData}
+        />
+      )}
+
+      {createOppOpen && (
+        <CreateOpportunityModal
+          open={createOppOpen}
+          onClose={() => setCreateOppOpen(false)}
+          prefilledLeadId={id}
+        />
+      )}
+
       <ConfirmDialog
         open={deleteLeadOpen}
         onClose={() => setDeleteLeadOpen(false)}
@@ -414,7 +556,6 @@ export default function LeadDetailPage() {
         loading={deleteLead.isPending}
       />
 
-      {/* Delete File Confirmation */}
       <ConfirmDialog
         open={!!deleteFileTarget}
         onClose={() => setDeleteFileTarget(null)}
@@ -425,5 +566,22 @@ export default function LeadDetailPage() {
         loading={deleteFile.isPending}
       />
     </>
+  );
+}
+
+/* ── Small contact detail chip ── */
+function ContactItem({ icon: Icon, label, value }) {
+  return (
+    <div className="flex items-center gap-2">
+      <div className="w-7 h-7 rounded-md bg-slate-100 flex items-center justify-center shrink-0">
+        <Icon size={14} className="text-secondary" />
+      </div>
+      <div>
+        <p className="text-[11px] text-slate-400 uppercase tracking-wider leading-none">
+          {label}
+        </p>
+        <p className="text-sm font-medium text-primary mt-0.5">{value}</p>
+      </div>
+    </div>
   );
 }

@@ -5,7 +5,7 @@ import * as draftsApi from '../api/draftsApi';
 export const useDrafts = (params) => {
   return useQuery({
     queryKey: ['drafts', params],
-    queryFn: () => draftsApi.getDrafts(params),
+    queryFn: () => draftsApi.getDrafts(params).then(res => res.data),
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Something went wrong');
     },
@@ -15,7 +15,7 @@ export const useDrafts = (params) => {
 export const useDraft = (id) => {
   return useQuery({
     queryKey: ['drafts', id],
-    queryFn: () => draftsApi.getDraft(id),
+    queryFn: () => draftsApi.getDraft(id).then(res => res.data),
     enabled: !!id,
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Something went wrong');

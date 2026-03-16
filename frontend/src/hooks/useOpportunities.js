@@ -5,7 +5,7 @@ import * as opportunitiesApi from '../api/opportunitiesApi';
 export const useOpportunities = (params) => {
   return useQuery({
     queryKey: ['opportunities', params],
-    queryFn: () => opportunitiesApi.getOpportunities(params),
+    queryFn: () => opportunitiesApi.getOpportunities(params).then(res => res.data),
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Something went wrong');
     },
@@ -15,7 +15,7 @@ export const useOpportunities = (params) => {
 export const useOpportunity = (id) => {
   return useQuery({
     queryKey: ['opportunities', id],
-    queryFn: () => opportunitiesApi.getOpportunity(id),
+    queryFn: () => opportunitiesApi.getOpportunity(id).then(res => res.data),
     enabled: !!id,
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Something went wrong');

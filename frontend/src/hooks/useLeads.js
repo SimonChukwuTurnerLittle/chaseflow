@@ -5,7 +5,7 @@ import * as leadsApi from '../api/leadsApi';
 export const useLeads = (params) => {
   return useQuery({
     queryKey: ['leads', params],
-    queryFn: () => leadsApi.getLeads(params),
+    queryFn: () => leadsApi.getLeads(params).then(res => res.data),
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Something went wrong');
     },
@@ -15,7 +15,7 @@ export const useLeads = (params) => {
 export const useLead = (id) => {
   return useQuery({
     queryKey: ['leads', id],
-    queryFn: () => leadsApi.getLead(id),
+    queryFn: () => leadsApi.getLead(id).then(res => res.data),
     enabled: !!id,
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Something went wrong');
@@ -69,7 +69,7 @@ export const useDeleteLead = () => {
 export const useLeadNotes = (leadId) => {
   return useQuery({
     queryKey: ['leads', leadId, 'notes'],
-    queryFn: () => leadsApi.getLeadNotes(leadId),
+    queryFn: () => leadsApi.getLeadNotes(leadId).then(res => res.data),
     enabled: !!leadId,
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Something went wrong');
@@ -94,7 +94,7 @@ export const useAddNote = () => {
 export const useLeadFiles = (leadId) => {
   return useQuery({
     queryKey: ['leads', leadId, 'files'],
-    queryFn: () => leadsApi.getLeadFiles(leadId),
+    queryFn: () => leadsApi.getLeadFiles(leadId).then(res => res.data),
     enabled: !!leadId,
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Something went wrong');
