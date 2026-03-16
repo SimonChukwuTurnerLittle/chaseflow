@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/opportunities/{opportunityId}/activities")
@@ -18,13 +19,13 @@ public class ActivityController {
     private final ActivityService activityService;
 
     @GetMapping
-    public ResponseEntity<List<ActivityResponse>> listActivities(@PathVariable Long opportunityId) {
+    public ResponseEntity<List<ActivityResponse>> listActivities(@PathVariable UUID opportunityId) {
         return ResponseEntity.ok(activityService.listActivities(opportunityId));
     }
 
     @PostMapping
     public ResponseEntity<ActivityResponse> logActivity(
-            @PathVariable Long opportunityId, @RequestBody ActivityRequest request) {
+            @PathVariable UUID opportunityId, @RequestBody ActivityRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(activityService.logActivity(opportunityId, request));
     }
 }

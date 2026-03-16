@@ -6,8 +6,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
-public interface TemplateRepository extends JpaRepository<Template, Long> {
-    List<Template> findByChaseSequenceId(Long chaseSequenceId);
-    Optional<Template> findByChaseSequenceIdAndTemplateType(Long chaseSequenceId, TemplateType templateType);
+public interface TemplateRepository extends JpaRepository<Template, UUID> {
+    List<Template> findByChaseSequenceId(UUID chaseSequenceId);
+    Optional<Template> findByChaseSequenceIdAndTemplateType(UUID chaseSequenceId, TemplateType templateType);
 }

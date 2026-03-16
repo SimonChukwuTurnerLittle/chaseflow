@@ -3,27 +3,29 @@ package com.chaseflow.tenant;
 import com.chaseflow.domain.enums.UserRole;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @Component
 public class TenantContext {
 
-    private static final ThreadLocal<Long> TENANT_ID = new ThreadLocal<>();
-    private static final ThreadLocal<Long> USER_ID = new ThreadLocal<>();
+    private static final ThreadLocal<UUID> TENANT_ID = new ThreadLocal<>();
+    private static final ThreadLocal<UUID> USER_ID = new ThreadLocal<>();
     private static final ThreadLocal<UserRole> USER_ROLE = new ThreadLocal<>();
     private static final ThreadLocal<String> USERNAME = new ThreadLocal<>();
 
-    public void setTenantId(Long tenantId) {
+    public void setTenantId(UUID tenantId) {
         TENANT_ID.set(tenantId);
     }
 
-    public Long currentTenantId() {
+    public UUID currentTenantId() {
         return TENANT_ID.get();
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(UUID userId) {
         USER_ID.set(userId);
     }
 
-    public Long currentUserId() {
+    public UUID currentUserId() {
         return USER_ID.get();
     }
 

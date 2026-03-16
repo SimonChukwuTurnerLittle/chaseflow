@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "activity")
@@ -13,11 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Activity {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Activity extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "opportunity_id", nullable = false)
@@ -44,7 +41,7 @@ public class Activity {
     private Boolean aiGenerated = false;
 
     @Column(name = "ai_draft_id")
-    private Long aiDraftId;
+    private UUID aiDraftId;
 
     @Column(name = "date_added", nullable = false, updatable = false)
     private LocalDateTime dateAdded;

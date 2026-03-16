@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/v1/opportunities")
 @RequiredArgsConstructor
@@ -29,24 +31,24 @@ public class OpportunityController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<OpportunityResponse> getOpportunity(@PathVariable Long id) {
+    public ResponseEntity<OpportunityResponse> getOpportunity(@PathVariable UUID id) {
         return ResponseEntity.ok(opportunityService.getOpportunity(id));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<OpportunityResponse> updateOpportunity(
-            @PathVariable Long id, @RequestBody OpportunityRequest request) {
+            @PathVariable UUID id, @RequestBody OpportunityRequest request) {
         return ResponseEntity.ok(opportunityService.updateOpportunity(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteOpportunity(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteOpportunity(@PathVariable UUID id) {
         opportunityService.deleteOpportunity(id);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{id}/complete")
-    public ResponseEntity<OpportunityResponse> completeOpportunity(@PathVariable Long id) {
+    public ResponseEntity<OpportunityResponse> completeOpportunity(@PathVariable UUID id) {
         return ResponseEntity.ok(opportunityService.completeOpportunity(id));
     }
 }

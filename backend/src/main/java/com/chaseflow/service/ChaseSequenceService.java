@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -25,7 +26,7 @@ public class ChaseSequenceService {
     private final ServiceRepository serviceRepository;
     private final TenantContext tenantContext;
 
-    public List<ChaseSequenceResponse> listSequences(Long serviceId) {
+    public List<ChaseSequenceResponse> listSequences(UUID serviceId) {
         verifyServiceBelongsToTenant(serviceId);
         return chaseSequenceRepository.findByServiceIdOrderByTemperatureAscStepNumberAsc(serviceId).stream()
                 .map(this::toResponse)
@@ -33,7 +34,7 @@ public class ChaseSequenceService {
     }
 
     @Transactional
-    public ChaseSequenceResponse addStep(Long serviceId, ChaseSequenceRequest request) {
+    public ChaseSequenceResponse addStep(UUID serviceId, ChaseSequenceRequest request) {
         assertAdmin();
         com.chaseflow.domain.Service service = verifyServiceBelongsToTenant(serviceId);
 
@@ -52,7 +53,7 @@ public class ChaseSequenceService {
     }
 
     @Transactional
-    public ChaseSequenceResponse updateStep(Long serviceId, Long id, ChaseSequenceRequest request) {
+    public ChaseSequenceResponse updateStep(UUID serviceId, UUID id, ChaseSequenceRequest request) {
         assertAdmin();
         verifyServiceBelongsToTenant(serviceId);
         ChaseSequence seq = chaseSequenceRepository.findById(id)
@@ -72,7 +73,7 @@ public class ChaseSequenceService {
     }
 
     @Transactional
-    public void deleteStep(Long serviceId, Long id) {
+    public void deleteStep(UUID serviceId, UUID id) {
         assertAdmin();
         verifyServiceBelongsToTenant(serviceId);
         ChaseSequence seq = chaseSequenceRepository.findById(id)
@@ -84,7 +85,7 @@ public class ChaseSequenceService {
         chaseSequenceRepository.save(seq);
     }
 
-    private com.chaseflow.domain.Service verifyServiceBelongsToTenant(Long serviceId) {
+    private com.chaseflow.domain.Service verifyServiceBelongsToTenant(UUID serviceId) {
         return serviceRepository.findByIdAndTenantId(serviceId, tenantContext.currentTenantId())
                 .orElseThrow(() -> new NotFoundException("Service not found with id: " + serviceId));
     }

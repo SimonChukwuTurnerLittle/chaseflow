@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/dashboard")
@@ -32,7 +33,7 @@ public class DashboardController {
 
     @GetMapping
     public ResponseEntity<DashboardResponse> getDashboard() {
-        Long tenantId = tenantContext.currentTenantId();
+        UUID tenantId = tenantContext.currentTenantId();
 
         long totalLeads = leadRepository.findByTenantId(tenantId, Pageable.unpaged()).getTotalElements();
         long activeOpportunities = opportunityRepository.countByTenantIdAndStatus(tenantId, OpportunityStatus.ACTIVE);

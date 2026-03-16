@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +35,7 @@ public class ServiceManagementService {
     // ── Service Categories ──
 
     public List<ServiceCategoryResponse> listCategories() {
-        Long tenantId = tenantContext.currentTenantId();
+        UUID tenantId = tenantContext.currentTenantId();
         return serviceCategoryRepository.findByTenantIdOrderBySortOrder(tenantId).stream()
                 .map(this::toCategoryResponse)
                 .toList();
@@ -43,7 +44,7 @@ public class ServiceManagementService {
     @Transactional
     public ServiceCategoryResponse createCategory(ServiceCategoryRequest request) {
         assertAdmin();
-        Long tenantId = tenantContext.currentTenantId();
+        UUID tenantId = tenantContext.currentTenantId();
         ServiceCategory category = ServiceCategory.builder()
                 .tenantId(tenantId)
                 .categoryName(request.getCategoryName())
@@ -56,7 +57,7 @@ public class ServiceManagementService {
     }
 
     @Transactional
-    public ServiceCategoryResponse updateCategory(Long id, ServiceCategoryRequest request) {
+    public ServiceCategoryResponse updateCategory(UUID id, ServiceCategoryRequest request) {
         assertAdmin();
         ServiceCategory category = findCategoryByIdAndTenant(id);
         category.setCategoryName(request.getCategoryName());
@@ -68,7 +69,7 @@ public class ServiceManagementService {
     }
 
     @Transactional
-    public void deleteCategory(Long id) {
+    public void deleteCategory(UUID id) {
         assertAdmin();
         ServiceCategory category = findCategoryByIdAndTenant(id);
         category.setDeleted(true);
@@ -78,20 +79,20 @@ public class ServiceManagementService {
     // ── Services ──
 
     public List<ServiceResponse> listServices() {
-        Long tenantId = tenantContext.currentTenantId();
+        UUID tenantId = tenantContext.currentTenantId();
         return serviceRepository.findByTenantIdOrderBySortOrder(tenantId).stream()
                 .map(this::toServiceResponse)
                 .toList();
     }
 
-    public ServiceResponse getService(Long id) {
+    public ServiceResponse getService(UUID id) {
         return toServiceResponseWithSequences(findServiceByIdAndTenant(id));
     }
 
     @Transactional
     public ServiceResponse createService(ServiceRequest request) {
         assertAdmin();
-        Long tenantId = tenantContext.currentTenantId();
+        UUID tenantId = tenantContext.currentTenantId();
 
         ServiceMode mode = ServiceMode.valueOf(request.getServiceMode());
         if (mode == ServiceMode.PACKAGE && request.getPrice() == null) {
@@ -126,7 +127,7 @@ public class ServiceManagementService {
     }
 
     @Transactional
-    public ServiceResponse updateService(Long id, ServiceRequest request) {
+    public ServiceResponse updateService(UUID id, ServiceRequest request) {
         assertAdmin();
         com.chaseflow.domain.Service service = findServiceByIdAndTenant(id);
 
@@ -156,7 +157,7 @@ public class ServiceManagementService {
     }
 
     @Transactional
-    public void deleteService(Long id) {
+    public void deleteService(UUID id) {
         assertAdmin();
         com.chaseflow.domain.Service service = findServiceByIdAndTenant(id);
         service.setDeleted(true);
@@ -171,7 +172,7 @@ public class ServiceManagementService {
         }
     }
 
-    private ServiceCategory findCategoryByIdAndTenant(Long id) {
+    private ServiceCategory findCategoryByIdAndTenant(UUID id) {
         ServiceCategory cat = serviceCategoryRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Service category not found with id: " + id));
         if (!cat.getTenantId().equals(tenantContext.currentTenantId())) {
@@ -180,7 +181,7 @@ public class ServiceManagementService {
         return cat;
     }
 
-    private com.chaseflow.domain.Service findServiceByIdAndTenant(Long id) {
+    private com.chaseflow.domain.Service findServiceByIdAndTenant(UUID id) {
         return serviceRepository.findByIdAndTenantId(id, tenantContext.currentTenantId())
                 .orElseThrow(() -> new NotFoundException("Service not found with id: " + id));
     }

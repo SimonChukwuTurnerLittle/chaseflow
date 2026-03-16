@@ -19,6 +19,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class UserAccountService {
@@ -85,7 +87,7 @@ public class UserAccountService {
                 .build();
     }
 
-    public void enforceUserLimit(Long tenantId) {
+    public void enforceUserLimit(UUID tenantId) {
         Tenant tenant = tenantRepository.findById(tenantId)
                 .orElseThrow(() -> new ValidationException("Tenant not found"));
         long activeUsers = userAccountRepository.countByTenantIdAndDeletedFalse(tenantId);

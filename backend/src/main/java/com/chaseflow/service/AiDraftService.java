@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -40,18 +41,18 @@ public class AiDraftService {
     private final TenantContext tenantContext;
 
     public Page<AiDraftResponse> listPendingDrafts(Pageable pageable) {
-        Long tenantId = tenantContext.currentTenantId();
+        UUID tenantId = tenantContext.currentTenantId();
         return aiDraftRepository.findByTenantIdAndStatus(tenantId, DraftStatus.PENDING, pageable)
                 .map(this::toResponse);
     }
 
-    public AiDraftResponse getDraft(Long id) {
+    public AiDraftResponse getDraft(UUID id) {
         AiDraft draft = findDraftById(id);
         return toResponse(draft);
     }
 
     @Transactional
-    public AiDraftResponse updateDraft(Long id, AiDraftUpdateRequest request) {
+    public AiDraftResponse updateDraft(UUID id, AiDraftUpdateRequest request) {
         assertSalesHandlerOrAbove();
         AiDraft draft = findDraftById(id);
         if (draft.getStatus() != DraftStatus.PENDING) {
@@ -64,7 +65,7 @@ public class AiDraftService {
     }
 
     @Transactional
-    public AiDraftResponse approveDraft(Long id) {
+    public AiDraftResponse approveDraft(UUID id) {
         assertSalesHandlerOrAbove();
         AiDraft draft = findDraftById(id);
         if (draft.getStatus() != DraftStatus.PENDING) {
@@ -98,7 +99,7 @@ public class AiDraftService {
     }
 
     @Transactional
-    public AiDraftResponse rejectDraft(Long id) {
+    public AiDraftResponse rejectDraft(UUID id) {
         assertSalesHandlerOrAbove();
         AiDraft draft = findDraftById(id);
         if (draft.getStatus() != DraftStatus.PENDING) {
@@ -157,7 +158,7 @@ public class AiDraftService {
         }
     }
 
-    private AiDraft findDraftById(Long id) {
+    private AiDraft findDraftById(UUID id) {
         AiDraft draft = aiDraftRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Draft not found with id: " + id));
         if (!draft.getOpportunity().getTenantId().equals(tenantContext.currentTenantId())) {

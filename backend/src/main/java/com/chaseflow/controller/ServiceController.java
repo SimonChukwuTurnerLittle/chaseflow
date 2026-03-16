@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/services")
@@ -29,18 +30,18 @@ public class ServiceController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ServiceResponse> getService(@PathVariable Long id) {
+    public ResponseEntity<ServiceResponse> getService(@PathVariable UUID id) {
         return ResponseEntity.ok(serviceManagementService.getService(id));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ServiceResponse> updateService(
-            @PathVariable Long id, @Valid @RequestBody ServiceRequest request) {
+            @PathVariable UUID id, @Valid @RequestBody ServiceRequest request) {
         return ResponseEntity.ok(serviceManagementService.updateService(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteService(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteService(@PathVariable UUID id) {
         serviceManagementService.deleteService(id);
         return ResponseEntity.noContent().build();
     }

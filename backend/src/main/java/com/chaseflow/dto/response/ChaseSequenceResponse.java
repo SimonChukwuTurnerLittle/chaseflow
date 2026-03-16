@@ -4,12 +4,13 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @Builder
 public class ChaseSequenceResponse {
-    private Long id;
-    private Long serviceId;
+    private UUID id;
+    private UUID serviceId;
     private String temperature;
     private Integer stepNumber;
     private Integer delayDays;

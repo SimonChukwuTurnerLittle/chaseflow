@@ -5,14 +5,15 @@ import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @Builder
 public class OpportunityResponse {
-    private Long id;
-    private Long leadId;
+    private UUID id;
+    private UUID leadId;
     private String leadName;
-    private Long serviceId;
+    private UUID serviceId;
     private String serviceName;
     private LocalDateTime dateAdded;
     private String status;

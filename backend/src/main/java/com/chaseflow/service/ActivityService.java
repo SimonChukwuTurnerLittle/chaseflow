@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -25,7 +26,7 @@ public class ActivityService {
     private final OpportunityRepository opportunityRepository;
     private final TenantContext tenantContext;
 
-    public List<ActivityResponse> listActivities(Long opportunityId) {
+    public List<ActivityResponse> listActivities(UUID opportunityId) {
         findOpportunityByIdAndTenant(opportunityId);
         return activityRepository.findByOpportunityIdOrderByDateAddedDesc(opportunityId).stream()
                 .map(this::toResponse)
@@ -33,7 +34,7 @@ public class ActivityService {
     }
 
     @Transactional
-    public ActivityResponse logActivity(Long opportunityId, ActivityRequest request) {
+    public ActivityResponse logActivity(UUID opportunityId, ActivityRequest request) {
         assertWriteAccess();
         Opportunity opp = findOpportunityByIdAndTenant(opportunityId);
 
@@ -53,7 +54,7 @@ public class ActivityService {
         return toResponse(activity);
     }
 
-    private Opportunity findOpportunityByIdAndTenant(Long id) {
+    private Opportunity findOpportunityByIdAndTenant(UUID id) {
         Opportunity opp = opportunityRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Opportunity not found with id: " + id));
         if (!opp.getTenantId().equals(tenantContext.currentTenantId())) {

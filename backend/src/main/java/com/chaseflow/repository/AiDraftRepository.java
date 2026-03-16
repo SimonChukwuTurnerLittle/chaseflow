@@ -8,7 +8,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface AiDraftRepository extends JpaRepository<AiDraft, Long> {
+import java.util.UUID;
+
+public interface AiDraftRepository extends JpaRepository<AiDraft, UUID> {
     @Query("SELECT d FROM AiDraft d JOIN d.opportunity o WHERE o.tenantId = :tenantId AND d.status = :status")
-    Page<AiDraft> findByTenantIdAndStatus(@Param("tenantId") Long tenantId, @Param("status") DraftStatus status, Pageable pageable);
+    Page<AiDraft> findByTenantIdAndStatus(@Param("tenantId") UUID tenantId, @Param("status") DraftStatus status, Pageable pageable);
 }

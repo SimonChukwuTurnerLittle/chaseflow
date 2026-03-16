@@ -11,7 +11,10 @@
       "Bash(ls \"/c/Users/Simon Chukwu/Documents/chaseflow/frontend/src/layouts/\"*)",
       "Bash(npx vite:*)",
       "Bash(find 'c:\\\\Users\\\\Simon Chukwu\\\\Documents\\\\chaseflow\\\\backend\\\\src\\\\main\\\\java\\\\com\\\\chaseflow' -type f -name *ead*)",
-      "Bash(python .claude/skills/ui-ux-pro-max/scripts/search.py \"CRM detail page tabs card layout\" --domain ux -n 5)"
+      "Bash(python .claude/skills/ui-ux-pro-max/scripts/search.py \"CRM detail page tabs card layout\" --domain ux -n 5)",
+      "Bash(mvn clean:*)",
+      "Bash(./mvnw clean:*)",
+      "Bash(java -version)"
     ]
   }
 }

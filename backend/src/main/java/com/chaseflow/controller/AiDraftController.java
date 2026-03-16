@@ -9,6 +9,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/v1/drafts")
 @RequiredArgsConstructor
@@ -22,23 +24,23 @@ public class AiDraftController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<AiDraftResponse> getDraft(@PathVariable Long id) {
+    public ResponseEntity<AiDraftResponse> getDraft(@PathVariable UUID id) {
         return ResponseEntity.ok(aiDraftService.getDraft(id));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<AiDraftResponse> updateDraft(
-            @PathVariable Long id, @RequestBody AiDraftUpdateRequest request) {
+            @PathVariable UUID id, @RequestBody AiDraftUpdateRequest request) {
         return ResponseEntity.ok(aiDraftService.updateDraft(id, request));
     }
 
     @PostMapping("/{id}/approve")
-    public ResponseEntity<AiDraftResponse> approveDraft(@PathVariable Long id) {
+    public ResponseEntity<AiDraftResponse> approveDraft(@PathVariable UUID id) {
         return ResponseEntity.ok(aiDraftService.approveDraft(id));
     }
 
     @PostMapping("/{id}/reject")
-    public ResponseEntity<AiDraftResponse> rejectDraft(@PathVariable Long id) {
+    public ResponseEntity<AiDraftResponse> rejectDraft(@PathVariable UUID id) {
         return ResponseEntity.ok(aiDraftService.rejectDraft(id));
     }
 }

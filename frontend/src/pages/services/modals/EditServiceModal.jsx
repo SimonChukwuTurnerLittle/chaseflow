@@ -51,7 +51,7 @@ export default function EditServiceModal({ open, onClose, service }) {
 
   const categories = categoriesRes?.data ?? [];
   const categoryOptions = categories.map((c) => ({
-    value: String(c.id),
+    value: c.id,
     label: c.categoryName,
   }));
 
@@ -81,9 +81,7 @@ export default function EditServiceModal({ open, onClose, service }) {
   useEffect(() => {
     if (service) {
       reset({
-        categoryId: service.serviceCategory?.id
-          ? String(service.serviceCategory.id)
-          : '',
+        categoryId: service.serviceCategory?.id ?? '',
         serviceName: service.serviceName || '',
         serviceDescription: service.serviceDescription || '',
         serviceMode: service.serviceMode || 'WORK_TYPE',

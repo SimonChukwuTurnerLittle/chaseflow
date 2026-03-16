@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +30,7 @@ public class TemplateService {
     private final ServiceRepository serviceRepository;
     private final TenantContext tenantContext;
 
-    public List<TemplateResponse> listTemplates(Long sequenceId) {
+    public List<TemplateResponse> listTemplates(UUID sequenceId) {
         ChaseSequence seq = findSequenceAndVerifyTenant(sequenceId);
         return templateRepository.findByChaseSequenceId(sequenceId).stream()
                 .map(this::toResponse)
@@ -37,7 +38,7 @@ public class TemplateService {
     }
 
     @Transactional
-    public TemplateResponse upsertTemplate(Long sequenceId, String channel, TemplateRequest request) {
+    public TemplateResponse upsertTemplate(UUID sequenceId, String channel, TemplateRequest request) {
         assertAdmin();
         ChaseSequence seq = findSequenceAndVerifyTenant(sequenceId);
         TemplateType type = TemplateType.valueOf(channel.toUpperCase());
@@ -92,7 +93,7 @@ public class TemplateService {
         };
     }
 
-    private ChaseSequence findSequenceAndVerifyTenant(Long sequenceId) {
+    private ChaseSequence findSequenceAndVerifyTenant(UUID sequenceId) {
         ChaseSequence seq = chaseSequenceRepository.findById(sequenceId)
                 .orElseThrow(() -> new NotFoundException("Chase sequence not found with id: " + sequenceId));
         com.chaseflow.domain.Service service = seq.getService();

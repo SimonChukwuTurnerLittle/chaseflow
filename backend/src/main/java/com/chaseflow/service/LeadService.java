@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -36,7 +37,7 @@ public class LeadService {
     @Transactional
     public LeadResponse createLead(LeadRequest request) {
         assertWriteAccess();
-        Long tenantId = tenantContext.currentTenantId();
+        UUID tenantId = tenantContext.currentTenantId();
 
         Lead lead = Lead.builder()
                 .tenantId(tenantId)
@@ -66,7 +67,7 @@ public class LeadService {
     }
 
     public Page<LeadResponse> listLeads(String source, Pageable pageable) {
-        Long tenantId = tenantContext.currentTenantId();
+        UUID tenantId = tenantContext.currentTenantId();
         Page<Lead> page;
         if (source != null && !source.isBlank()) {
             page = leadRepository.findByTenantIdAndSourceContainingIgnoreCase(tenantId, source, pageable);
@@ -76,12 +77,12 @@ public class LeadService {
         return page.map(this::toResponse);
     }
 
-    public LeadResponse getLead(Long id) {
+    public LeadResponse getLead(UUID id) {
         return toResponse(findLeadByIdAndTenant(id));
     }
 
     @Transactional
-    public LeadResponse updateLead(Long id, LeadRequest request) {
+    public LeadResponse updateLead(UUID id, LeadRequest request) {
         assertWriteAccess();
         Lead lead = findLeadByIdAndTenant(id);
         lead.setFirstName(request.getFirstName());
@@ -111,14 +112,14 @@ public class LeadService {
     }
 
     @Transactional
-    public void deleteLead(Long id) {
+    public void deleteLead(UUID id) {
         assertWriteAccess();
         Lead lead = findLeadByIdAndTenant(id);
         lead.setDeleted(true);
         leadRepository.save(lead);
     }
 
-    public List<NoteResponse> getNotes(Long leadId) {
+    public List<NoteResponse> getNotes(UUID leadId) {
         findLeadByIdAndTenant(leadId);
         return noteRepository.findByLeadIdOrderByDateAddedDesc(leadId).stream()
                 .map(this::toNoteResponse)
@@ -126,7 +127,7 @@ public class LeadService {
     }
 
     @Transactional
-    public NoteResponse addNote(Long leadId, NoteRequest request) {
+    public NoteResponse addNote(UUID leadId, NoteRequest request) {
         assertWriteAccess();
         Lead lead = findLeadByIdAndTenant(leadId);
         Note note = Note.builder()
@@ -138,7 +139,7 @@ public class LeadService {
         return toNoteResponse(note);
     }
 
-    public List<RelatedFileResponse> getFiles(Long leadId) {
+    public List<RelatedFileResponse> getFiles(UUID leadId) {
         findLeadByIdAndTenant(leadId);
         return relatedFileRepository.findByLeadIdOrderByDateAddedDesc(leadId).stream()
                 .map(this::toFileResponse)
@@ -146,7 +147,7 @@ public class LeadService {
     }
 
     @Transactional
-    public RelatedFileResponse uploadFile(Long leadId, MultipartFile file, String description) {
+    public RelatedFileResponse uploadFile(UUID leadId, MultipartFile file, String description) {
         assertWriteAccess();
         Lead lead = findLeadByIdAndTenant(leadId);
         String s3Key = fileStorageService.upload(file, tenantContext.currentTenantId(), leadId);
@@ -164,7 +165,7 @@ public class LeadService {
         return toFileResponse(relatedFile);
     }
 
-    private Lead findLeadByIdAndTenant(Long id) {
+    private Lead findLeadByIdAndTenant(UUID id) {
         Lead lead = leadRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Lead not found with id: " + id));
         if (!lead.getTenantId().equals(tenantContext.currentTenantId())) {

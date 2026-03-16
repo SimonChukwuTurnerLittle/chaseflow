@@ -50,7 +50,7 @@ export default function CreateServiceModal({ open, onClose }) {
 
   const categories = categoriesRes?.data ?? [];
   const categoryOptions = categories.map((c) => ({
-    value: String(c.id),
+    value: c.id,
     label: c.categoryName,
   }));
 

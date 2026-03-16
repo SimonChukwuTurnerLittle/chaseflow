@@ -4,12 +4,13 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @Builder
 public class AiDraftResponse {
-    private Long id;
-    private Long opportunityId;
+    private UUID id;
+    private UUID opportunityId;
     private String leadName;
     private String serviceName;
     private String templateType;

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/leads")
@@ -36,44 +37,44 @@ public class LeadController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<LeadResponse> getLead(@PathVariable Long id) {
+    public ResponseEntity<LeadResponse> getLead(@PathVariable UUID id) {
         return ResponseEntity.ok(leadService.getLead(id));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<LeadResponse> updateLead(@PathVariable Long id, @Valid @RequestBody LeadRequest request) {
+    public ResponseEntity<LeadResponse> updateLead(@PathVariable UUID id, @Valid @RequestBody LeadRequest request) {
         return ResponseEntity.ok(leadService.updateLead(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteLead(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteLead(@PathVariable UUID id) {
         leadService.deleteLead(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}/opportunities")
-    public ResponseEntity<List<OpportunityResponse>> getOpportunities(@PathVariable Long id) {
+    public ResponseEntity<List<OpportunityResponse>> getOpportunities(@PathVariable UUID id) {
         return ResponseEntity.ok(opportunityService.getOpportunitiesForLead(id));
     }
 
     @GetMapping("/{id}/notes")
-    public ResponseEntity<List<NoteResponse>> getNotes(@PathVariable Long id) {
+    public ResponseEntity<List<NoteResponse>> getNotes(@PathVariable UUID id) {
         return ResponseEntity.ok(leadService.getNotes(id));
     }
 
     @PostMapping("/{id}/notes")
-    public ResponseEntity<NoteResponse> addNote(@PathVariable Long id, @Valid @RequestBody NoteRequest request) {
+    public ResponseEntity<NoteResponse> addNote(@PathVariable UUID id, @Valid @RequestBody NoteRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(leadService.addNote(id, request));
     }
 
     @GetMapping("/{id}/files")
-    public ResponseEntity<List<RelatedFileResponse>> getFiles(@PathVariable Long id) {
+    public ResponseEntity<List<RelatedFileResponse>> getFiles(@PathVariable UUID id) {
         return ResponseEntity.ok(leadService.getFiles(id));
     }
 
     @PostMapping("/{id}/files")
     public ResponseEntity<RelatedFileResponse> uploadFile(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "description", required = false) String description) {
         return ResponseEntity.status(HttpStatus.CREATED).body(leadService.uploadFile(id, file, description));

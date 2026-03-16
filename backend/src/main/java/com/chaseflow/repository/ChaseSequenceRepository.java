@@ -6,9 +6,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
-public interface ChaseSequenceRepository extends JpaRepository<ChaseSequence, Long> {
-    List<ChaseSequence> findByServiceIdOrderByTemperatureAscStepNumberAsc(Long serviceId);
-    List<ChaseSequence> findByServiceIdAndTemperatureOrderByStepNumberAsc(Long serviceId, Temperature temperature);
-    Optional<ChaseSequence> findByServiceIdAndTemperatureAndStepNumber(Long serviceId, Temperature temperature, Integer stepNumber);
+public interface ChaseSequenceRepository extends JpaRepository<ChaseSequence, UUID> {
+    List<ChaseSequence> findByServiceIdOrderByTemperatureAscStepNumberAsc(UUID serviceId);
+    List<ChaseSequence> findByServiceIdAndTemperatureOrderByStepNumberAsc(UUID serviceId, Temperature temperature);
+    Optional<ChaseSequence> findByServiceIdAndTemperatureAndStepNumber(UUID serviceId, Temperature temperature, Integer stepNumber);
 }

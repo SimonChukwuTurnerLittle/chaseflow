@@ -20,7 +20,7 @@ public class FileStorageService {
     @Value("${app.aws.s3-bucket}")
     private String bucketName;
 
-    public String upload(MultipartFile file, Long tenantId, Long leadId) {
+    public String upload(MultipartFile file, UUID tenantId, UUID leadId) {
         String key = "tenants/" + tenantId + "/leads/" + leadId + "/" + UUID.randomUUID() + "_" + file.getOriginalFilename();
 
         try {

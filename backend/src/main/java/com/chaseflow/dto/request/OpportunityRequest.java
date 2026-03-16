@@ -2,10 +2,12 @@ package com.chaseflow.dto.request;
 
 import lombok.Data;
 
+import java.util.UUID;
+
 @Data
 public class OpportunityRequest {
-    private Long leadId;
-    private Long serviceId;
+    private UUID leadId;
+    private UUID serviceId;
     private String category;
     private String chaseTechnique;
     private String chaseMethod;

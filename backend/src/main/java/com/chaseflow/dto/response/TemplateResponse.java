@@ -4,13 +4,14 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @Builder
 public class TemplateResponse {
-    private Long id;
-    private Long serviceId;
-    private Long chaseSequenceId;
+    private UUID id;
+    private UUID serviceId;
+    private UUID chaseSequenceId;
     private String templateTitle;
     private String templateDescription;
     private String templateType;

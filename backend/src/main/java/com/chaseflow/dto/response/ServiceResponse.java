@@ -6,12 +6,13 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @Builder
 public class ServiceResponse {
-    private Long id;
-    private Long serviceCategoryId;
+    private UUID id;
+    private UUID serviceCategoryId;
     private String categoryName;
     private String serviceName;
     private String serviceDescription;

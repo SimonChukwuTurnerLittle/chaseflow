@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @org.springframework.stereotype.Service
 @RequiredArgsConstructor
@@ -38,7 +39,7 @@ public class OpportunityService {
     @Transactional
     public OpportunityResponse createOpportunity(OpportunityRequest request) {
         assertWriteAccess();
-        Long tenantId = tenantContext.currentTenantId();
+        UUID tenantId = tenantContext.currentTenantId();
 
         Lead lead = leadRepository.findById(request.getLeadId())
                 .orElseThrow(() -> new NotFoundException("Lead not found with id: " + request.getLeadId()));
@@ -94,7 +95,7 @@ public class OpportunityService {
     }
 
     public Page<OpportunityResponse> listOpportunities(String status, Pageable pageable) {
-        Long tenantId = tenantContext.currentTenantId();
+        UUID tenantId = tenantContext.currentTenantId();
         Page<Opportunity> page;
         if (status != null && !status.isBlank()) {
             page = opportunityRepository.findByTenantIdAndStatus(tenantId,
@@ -105,11 +106,11 @@ public class OpportunityService {
         return page.map(this::toResponse);
     }
 
-    public OpportunityResponse getOpportunity(Long id) {
+    public OpportunityResponse getOpportunity(UUID id) {
         return toResponse(findByIdAndTenant(id));
     }
 
-    public List<OpportunityResponse> getOpportunitiesForLead(Long leadId) {
+    public List<OpportunityResponse> getOpportunitiesForLead(UUID leadId) {
         return opportunityRepository.findByLeadId(leadId).stream()
                 .filter(o -> o.getTenantId().equals(tenantContext.currentTenantId()))
                 .map(this::toResponse)
@@ -117,7 +118,7 @@ public class OpportunityService {
     }
 
     @Transactional
-    public OpportunityResponse updateOpportunity(Long id, OpportunityRequest request) {
+    public OpportunityResponse updateOpportunity(UUID id, OpportunityRequest request) {
         assertWriteAccess();
         Opportunity opp = findByIdAndTenant(id);
         opp.setCategory(request.getCategory());
@@ -134,7 +135,7 @@ public class OpportunityService {
     }
 
     @Transactional
-    public void deleteOpportunity(Long id) {
+    public void deleteOpportunity(UUID id) {
         assertWriteAccess();
         Opportunity opp = findByIdAndTenant(id);
         opp.setDeleted(true);
@@ -142,7 +143,7 @@ public class OpportunityService {
     }
 
     @Transactional
-    public OpportunityResponse completeOpportunity(Long id) {
+    public OpportunityResponse completeOpportunity(UUID id) {
         assertWriteAccess();
         Opportunity opp = findByIdAndTenant(id);
         opp.setStatus(OpportunityStatus.COMPLETED);
@@ -172,7 +173,7 @@ public class OpportunityService {
         return toResponse(opp);
     }
 
-    private Opportunity findByIdAndTenant(Long id) {
+    private Opportunity findByIdAndTenant(UUID id) {
         Opportunity opp = opportunityRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Opportunity not found with id: " + id));
         if (!opp.getTenantId().equals(tenantContext.currentTenantId())) {
