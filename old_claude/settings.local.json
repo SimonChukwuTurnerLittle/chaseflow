@@ -3,7 +3,13 @@
     "allow": [
       "Bash(ls -la \"c:\\\\Users\\\\Simon Chukwu\\\\Documents\\\\chaseflow\\\\.claude\\\\skills\\\\design\\\\data\"\" 2>/dev/null || echo \"Design data directory not found \")",
       "Bash(find '/c/Users/Simon Chukwu/Documents/chaseflow' -maxdepth 2 -type f \\\\\\(-name *.md -o -name *.json -o -name *.yml -o -name *.yaml \\\\\\))",
-      "Bash(find '/c/Users/Simon Chukwu/Documents/chaseflow/' -maxdepth 4 -not -path */.git/* -not -path */.claude/skills/* -not -path */node_modules/*)"
+      "Bash(find '/c/Users/Simon Chukwu/Documents/chaseflow/' -maxdepth 4 -not -path */.git/* -not -path */.claude/skills/* -not -path */node_modules/*)",
+      "WebSearch",
+      "Bash(mvn compile:*)",
+      "Bash(where mvn:*)",
+      "Bash(where mvn.cmd)",
+      "Bash(npm install:*)",
+      "Bash(npx vite:*)"
     ],
     "additionalDirectories": [
       "C:\\Users\\Simon Chukwu\\Documents\\chaseflow\\.claude\\skills\\design"

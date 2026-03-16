@@ -1,0 +1,52 @@
+### Java / Spring Boot ###
+HELP.md
+target/
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### Application properties (may contain secrets) ###
+**/src/main/resources/application.properties
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+### Node / React ###
+node_modules/
+frontend/dist/
+
+### Environment ###
+.env
+.env.*
+!.env.example
+
+### Maven wrapper ###
+!.mvn/wrapper/maven-wrapper.jar
+
+### OS ###
+.DS_Store
+Thumbs.db
