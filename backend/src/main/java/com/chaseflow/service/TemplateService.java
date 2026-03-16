@@ -1,6 +1,5 @@
 package com.chaseflow.service;
 
-import com.chaseflow.domain.ChaseSequence;
 import com.chaseflow.domain.Template;
 import com.chaseflow.domain.enums.ContentFormat;
 import com.chaseflow.domain.enums.TemplateType;
@@ -10,7 +9,6 @@ import com.chaseflow.dto.response.TemplateResponse;
 import com.chaseflow.exception.AccessDeniedException;
 import com.chaseflow.exception.NotFoundException;
 import com.chaseflow.exception.ValidationException;
-import com.chaseflow.repository.ChaseSequenceRepository;
 import com.chaseflow.repository.ServiceRepository;
 import com.chaseflow.repository.TemplateRepository;
 import com.chaseflow.tenant.TenantContext;
@@ -26,29 +24,28 @@ import java.util.UUID;
 public class TemplateService {
 
     private final TemplateRepository templateRepository;
-    private final ChaseSequenceRepository chaseSequenceRepository;
     private final ServiceRepository serviceRepository;
     private final TenantContext tenantContext;
 
-    public List<TemplateResponse> listTemplates(UUID sequenceId) {
-        ChaseSequence seq = findSequenceAndVerifyTenant(sequenceId);
-        return templateRepository.findByChaseSequenceId(sequenceId).stream()
+    public List<TemplateResponse> listTemplates(UUID serviceId) {
+        findServiceAndVerifyTenant(serviceId);
+        return templateRepository.findByServiceId(serviceId).stream()
                 .map(this::toResponse)
                 .toList();
     }
 
     @Transactional
-    public TemplateResponse upsertTemplate(UUID sequenceId, String channel, TemplateRequest request) {
+    public TemplateResponse upsertTemplate(UUID serviceId, Integer stepNumber, String channel, TemplateRequest request) {
         assertAdmin();
-        ChaseSequence seq = findSequenceAndVerifyTenant(sequenceId);
+        com.chaseflow.domain.Service service = findServiceAndVerifyTenant(serviceId);
         TemplateType type = TemplateType.valueOf(channel.toUpperCase());
 
         validateTemplateContent(type, request);
 
-        Template template = templateRepository.findByChaseSequenceIdAndTemplateType(sequenceId, type)
+        Template template = templateRepository.findByServiceIdAndStepNumberAndTemplateType(serviceId, stepNumber, type)
                 .orElse(Template.builder()
-                        .service(seq.getService())
-                        .chaseSequence(seq)
+                        .service(service)
+                        .stepNumber(stepNumber)
                         .templateType(type)
                         .createdBy(tenantContext.currentUsername())
                         .build());
@@ -93,14 +90,9 @@ public class TemplateService {
         };
     }
 
-    private ChaseSequence findSequenceAndVerifyTenant(UUID sequenceId) {
-        ChaseSequence seq = chaseSequenceRepository.findById(sequenceId)
-                .orElseThrow(() -> new NotFoundException("Chase sequence not found with id: " + sequenceId));
-        com.chaseflow.domain.Service service = seq.getService();
-        if (!service.getTenantId().equals(tenantContext.currentTenantId())) {
-            throw new NotFoundException("Chase sequence not found with id: " + sequenceId);
-        }
-        return seq;
+    private com.chaseflow.domain.Service findServiceAndVerifyTenant(UUID serviceId) {
+        return serviceRepository.findByIdAndTenantId(serviceId, tenantContext.currentTenantId())
+                .orElseThrow(() -> new NotFoundException("Service not found with id: " + serviceId));
     }
 
     private void assertAdmin() {
@@ -113,7 +105,7 @@ public class TemplateService {
         return TemplateResponse.builder()
                 .id(t.getId())
                 .serviceId(t.getService().getId())
-                .chaseSequenceId(t.getChaseSequence().getId())
+                .stepNumber(t.getStepNumber())
                 .templateTitle(t.getTemplateTitle())
                 .templateDescription(t.getTemplateDescription())
                 .templateType(t.getTemplateType().name())

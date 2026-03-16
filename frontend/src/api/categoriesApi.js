@@ -1,13 +1,13 @@
 import client from './client';
 
 export const getCategories = () =>
-  client.get('/categories');
+  client.get('/service-categories');
 
 export const createCategory = (data) =>
-  client.post('/categories', data);
+  client.post('/service-categories', data);
 
 export const updateCategory = (id, data) =>
-  client.put(`/categories/${id}`, data);
+  client.put(`/service-categories/${id}`, data);
 
 export const deleteCategory = (id) =>
-  client.delete(`/categories/${id}`);
+  client.delete(`/service-categories/${id}`);

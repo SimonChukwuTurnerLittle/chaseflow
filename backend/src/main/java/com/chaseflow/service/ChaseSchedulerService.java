@@ -9,6 +9,7 @@ import com.chaseflow.integration.TwilioWhatsAppClient;
 import com.chaseflow.repository.ActivityRepository;
 import com.chaseflow.repository.ChaseSequenceRepository;
 import com.chaseflow.repository.OpportunityRepository;
+import com.chaseflow.repository.TemplateRepository;
 import com.chaseflow.repository.TenantRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,6 +23,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -31,6 +33,7 @@ public class ChaseSchedulerService {
     private final OpportunityRepository opportunityRepository;
     private final ChaseSequenceRepository chaseSequenceRepository;
     private final ActivityRepository activityRepository;
+    private final TemplateRepository templateRepository;
     private final TenantRepository tenantRepository;
     private final AiDraftService aiDraftService;
     private final SesEmailClient sesEmailClient;
@@ -62,7 +65,7 @@ public class ChaseSchedulerService {
             return;
         }
 
-        Long serviceId = opp.getService().getId();
+        UUID serviceId = opp.getService().getId();
         int currentStep = opp.getCurrentStep();
 
         // Find matching chase sequence step
@@ -78,7 +81,7 @@ public class ChaseSchedulerService {
         ChaseSequence seq = seqOpt.get();
 
         // Find the preferred template — try EMAIL first, then SMS, then WHATSAPP
-        Template template = findPreferredTemplate(seq);
+        Template template = findPreferredTemplate(serviceId, currentStep);
         if (template == null) {
             log.warn("No template found for sequence {}", seq.getId());
             return;
@@ -143,8 +146,8 @@ public class ChaseSchedulerService {
         opportunityRepository.save(opp);
     }
 
-    private Template findPreferredTemplate(ChaseSequence seq) {
-        List<Template> templates = seq.getTemplates();
+    private Template findPreferredTemplate(UUID serviceId, int stepNumber) {
+        List<Template> templates = templateRepository.findByServiceIdAndStepNumber(serviceId, stepNumber);
         // Prefer EMAIL, then SMS, then WHATSAPP
         return templates.stream()
                 .filter(t -> t.getTemplateType() == TemplateType.EMAIL)

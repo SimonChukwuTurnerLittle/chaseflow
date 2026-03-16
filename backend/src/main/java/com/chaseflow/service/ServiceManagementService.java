@@ -16,6 +16,7 @@ import com.chaseflow.exception.NotFoundException;
 import com.chaseflow.exception.ValidationException;
 import com.chaseflow.repository.ServiceCategoryRepository;
 import com.chaseflow.repository.ServiceRepository;
+import com.chaseflow.repository.TemplateRepository;
 import com.chaseflow.tenant.TenantContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,7 @@ public class ServiceManagementService {
 
     private final ServiceRepository serviceRepository;
     private final ServiceCategoryRepository serviceCategoryRepository;
+    private final TemplateRepository templateRepository;
     private final TenantContext tenantContext;
 
     // ── Service Categories ──
@@ -173,9 +175,11 @@ public class ServiceManagementService {
     }
 
     private ServiceCategory findCategoryByIdAndTenant(UUID id) {
+        UUID tenantId = tenantContext.currentTenantId();
+        if (tenantId == null) throw new AccessDeniedException("Not authenticated");
         ServiceCategory cat = serviceCategoryRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Service category not found with id: " + id));
-        if (!cat.getTenantId().equals(tenantContext.currentTenantId())) {
+        if (!cat.getTenantId().equals(tenantId)) {
             throw new NotFoundException("Service category not found with id: " + id);
         }
         return cat;
@@ -227,11 +231,11 @@ public class ServiceManagementService {
                         .delayDays(seq.getDelayDays())
                         .isFinalStep(seq.getIsFinalStep())
                         .stopOnReply(seq.getStopOnReply())
-                        .templates(seq.getTemplates().stream()
+                        .templates(templateRepository.findByServiceIdAndStepNumber(s.getId(), seq.getStepNumber()).stream()
                                 .map(t -> TemplateResponse.builder()
                                         .id(t.getId())
                                         .serviceId(s.getId())
-                                        .chaseSequenceId(seq.getId())
+                                        .stepNumber(t.getStepNumber())
                                         .templateTitle(t.getTemplateTitle())
                                         .templateDescription(t.getTemplateDescription())
                                         .templateType(t.getTemplateType().name())

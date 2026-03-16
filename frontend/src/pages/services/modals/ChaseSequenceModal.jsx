@@ -34,23 +34,25 @@ const TOKENS = [
   '{{handler_name}}',
 ];
 
-function TemplateEditor({ sequence }) {
+function TemplateEditor({ sequence, service }) {
   const updateTemplate = useUpdateTemplate();
   const [activeChannel, setActiveChannel] = useState('EMAIL');
 
-  // Derive template state from sequence.templates
-  const templates = sequence.templates || {};
+  // Derive template state from sequence.templates (array keyed by templateType)
+  const templatesByChannel = Object.fromEntries(
+    (sequence.templates || []).map((t) => [t.templateType, t])
+  );
 
   const [localTemplates, setLocalTemplates] = useState(() => {
     const initial = {};
     CHANNELS.forEach((ch) => {
-      const t = templates[ch] || {};
+      const t = templatesByChannel[ch] || {};
       initial[ch] = {
-        title: t.title || '',
+        title: t.templateTitle || '',
         subject: t.subject || '',
-        content: t.content || '',
+        content: t.templateContent || '',
         aiPromptHint: t.aiPromptHint || '',
-        useAi: t.useAi || false,
+        useAi: t.useAi ?? false,
       };
     });
     return initial;
@@ -66,11 +68,19 @@ function TemplateEditor({ sequence }) {
   }
 
   function handleSaveTemplate() {
+    const t = localTemplates[activeChannel];
     updateTemplate.mutate(
       {
-        sequenceId: sequence.id,
+        serviceId: service.id,
+        stepNumber: sequence.stepNumber,
         channel: activeChannel,
-        data: localTemplates[activeChannel],
+        data: {
+          templateTitle: t.title,
+          subject: t.subject,
+          templateContent: t.content,
+          aiPromptHint: t.aiPromptHint,
+          useAi: t.useAi,
+        },
       },
       {
         onSuccess: () => toast.success('Template saved'),
@@ -277,7 +287,7 @@ function StepCard({ sequence, service, onDelete }) {
           {showTemplates ? 'Hide Templates' : 'Edit Templates'}
         </Button>
 
-        {showTemplates && <TemplateEditor sequence={sequence} />}
+        {showTemplates && <TemplateEditor sequence={sequence} service={service} />}
       </div>
     </div>
   );
@@ -291,7 +301,7 @@ export default function ChaseSequenceModal({ open, onClose, service }) {
   const [activeTemp, setActiveTemp] = useState('HOT');
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const sequences = sequencesRes?.data ?? [];
+  const sequences = sequencesRes ?? [];
 
   const filteredSteps = sequences
     .filter((s) => s.temperature === activeTemp)

@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "template", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"chase_sequence_id", "template_type"})
+        @UniqueConstraint(columnNames = {"service_id", "step_number", "template_type"})
 })
 @SQLRestriction("deleted = false")
 @Getter
@@ -24,9 +24,8 @@ public class Template extends BaseEntity {
     @JoinColumn(name = "service_id", nullable = false)
     private Service service;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chase_sequence_id", nullable = false)
-    private ChaseSequence chaseSequence;
+    @Column(name = "step_number", nullable = false)
+    private Integer stepNumber;
 
     @Column(name = "template_title")
     private String templateTitle;

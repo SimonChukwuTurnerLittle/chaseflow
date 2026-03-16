@@ -1,7 +1,7 @@
 import client from './client';
 
-export const getTemplates = (sequenceId) =>
-  client.get(`/sequences/${sequenceId}/templates`);
+export const getTemplates = (serviceId) =>
+  client.get(`/services/${serviceId}/templates`);
 
-export const updateTemplate = (sequenceId, channel, data) =>
-  client.put(`/sequences/${sequenceId}/templates/${channel}`, data);
+export const updateTemplate = (serviceId, stepNumber, channel, data) =>
+  client.put(`/services/${serviceId}/templates/${stepNumber}/${channel}`, data);

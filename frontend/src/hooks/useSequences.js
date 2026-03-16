@@ -60,8 +60,8 @@ export const useUpdateTemplate = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ sequenceId, channel, data }) =>
-      templatesApi.updateTemplate(sequenceId, channel, data),
+    mutationFn: ({ serviceId, stepNumber, channel, data }) =>
+      templatesApi.updateTemplate(serviceId, stepNumber, channel, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sequences'] });
     },

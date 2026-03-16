@@ -11,7 +11,7 @@ import java.util.UUID;
 public class TemplateResponse {
     private UUID id;
     private UUID serviceId;
-    private UUID chaseSequenceId;
+    private Integer stepNumber;
     private String templateTitle;
     private String templateDescription;
     private String templateType;

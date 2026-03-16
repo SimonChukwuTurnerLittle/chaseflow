@@ -5,8 +5,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLRestriction;
 
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "chase_sequence", uniqueConstraints = {
@@ -47,7 +45,4 @@ public class ChaseSequence extends BaseEntity {
     @Builder.Default
     private Boolean deleted = false;
 
-    @OneToMany(mappedBy = "chaseSequence", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<Template> templates = new ArrayList<>();
 }

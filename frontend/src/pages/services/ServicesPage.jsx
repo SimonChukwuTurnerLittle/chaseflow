@@ -46,20 +46,20 @@ export default function ServicesPage() {
   const [sequenceService, setSequenceService] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const services = servicesRes?.data ?? [];
+  const services = servicesRes ?? [];
 
   const grouped = useMemo(() => {
     const map = {};
     const uncategorized = [];
 
     services.forEach((svc) => {
-      if (svc.serviceCategory?.id) {
-        const catId = svc.serviceCategory.id;
+      if (svc.serviceCategoryId) {
+        const catId = svc.serviceCategoryId;
         if (!map[catId]) {
           map[catId] = {
             id: catId,
-            name: svc.serviceCategory.categoryName,
-            colourHex: svc.serviceCategory.colourHex || null,
+            name: svc.categoryName,
+            colourHex: null,
             services: [],
           };
         }

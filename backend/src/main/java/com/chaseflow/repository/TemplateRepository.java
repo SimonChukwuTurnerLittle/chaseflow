@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface TemplateRepository extends JpaRepository<Template, UUID> {
-    List<Template> findByChaseSequenceId(UUID chaseSequenceId);
-    Optional<Template> findByChaseSequenceIdAndTemplateType(UUID chaseSequenceId, TemplateType templateType);
+    List<Template> findByServiceId(UUID serviceId);
+    List<Template> findByServiceIdAndStepNumber(UUID serviceId, Integer stepNumber);
+    Optional<Template> findByServiceIdAndStepNumberAndTemplateType(UUID serviceId, Integer stepNumber, TemplateType templateType);
 }

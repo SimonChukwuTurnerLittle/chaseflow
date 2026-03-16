@@ -159,12 +159,8 @@ public class AiDraftService {
     }
 
     private AiDraft findDraftById(UUID id) {
-        AiDraft draft = aiDraftRepository.findById(id)
+        return aiDraftRepository.findByIdAndTenantId(id, tenantContext.currentTenantId())
                 .orElseThrow(() -> new NotFoundException("Draft not found with id: " + id));
-        if (!draft.getOpportunity().getTenantId().equals(tenantContext.currentTenantId())) {
-            throw new NotFoundException("Draft not found with id: " + id);
-        }
-        return draft;
     }
 
     private void assertSalesHandlerOrAbove() {

@@ -166,9 +166,11 @@ public class LeadService {
     }
 
     private Lead findLeadByIdAndTenant(UUID id) {
+        UUID tenantId = tenantContext.currentTenantId();
+        if (tenantId == null) throw new AccessDeniedException("Not authenticated");
         Lead lead = leadRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Lead not found with id: " + id));
-        if (!lead.getTenantId().equals(tenantContext.currentTenantId())) {
+        if (!lead.getTenantId().equals(tenantId)) {
             throw new NotFoundException("Lead not found with id: " + id);
         }
         return lead;
