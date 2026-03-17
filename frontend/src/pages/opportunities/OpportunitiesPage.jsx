@@ -46,9 +46,10 @@ export default function OpportunitiesPage() {
   const [viewTargetId, setViewTargetId] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  // Build query params
+  // Build query params (Spring Pageable is 0-indexed)
   const params = {
-    page,
+    page: page - 1,
+    size: 20,
     ...(search && { search }),
     ...(status && { status }),
     ...(temperature && { temperature }),
@@ -60,8 +61,8 @@ export default function OpportunitiesPage() {
   const { data, isLoading } = useOpportunities(params);
   const deleteMutation = useDeleteOpportunity();
 
-  const opportunities = data?.data?.opportunities ?? data?.data ?? [];
-  const totalPages = data?.data?.totalPages ?? 1;
+  const opportunities = data?.content ?? [];
+  const totalPages = data?.totalPages ?? 1;
 
   const hasFilters = search || status || temperature || service || dateFrom || dateTo;
 

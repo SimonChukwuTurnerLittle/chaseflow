@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, X, Pencil, Trash2, UserPlus } from 'lucide-react';
+import { Plus, X, Pencil, Trash2, UserPlus, Search } from 'lucide-react';
 import { format } from 'date-fns';
+import { clsx } from 'clsx';
 
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -23,35 +24,52 @@ const SOURCE_OPTIONS = [
   { value: 'Other', label: 'Other' },
 ];
 
+const RATING_OPTIONS = [
+  { value: '', label: 'All Ratings' },
+  { value: 'HOT', label: 'Hot' },
+  { value: 'MEDIUM', label: 'Medium' },
+  { value: 'COLD', label: 'Cold' },
+  { value: 'DORMANT', label: 'Dormant' },
+];
+
 
 export default function LeadsPage() {
   const [page, setPage] = useState(1);
+  const [search, setSearch] = useState('');
   const [source, setSource] = useState('');
+  const [rating, setRating] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const [createOpen, setCreateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const deleteLead = useDeleteLead();
 
-  const params = useMemo(
-    () => ({
-      page: page - 1,
-      size: 20,
-      source: source || undefined,
-    }),
-    [page, source]
-  );
+  const params = {
+    page: page - 1,
+    size: 20,
+    ...(search && { search }),
+    ...(source && { source }),
+    ...(rating && { rating }),
+    ...(dateFrom && { dateFrom }),
+    ...(dateTo && { dateTo }),
+  };
 
   const { data, isLoading } = useLeads(params);
 
   const leads = data?.content ?? [];
   const totalPages = data?.totalPages ?? 1;
 
-  const hasFilters = !!source;
+  const hasFilters = search || source || rating || dateFrom || dateTo;
 
-  function clearFilters() {
+  const clearFilters = useCallback(() => {
+    setSearch('');
     setSource('');
+    setRating('');
+    setDateFrom('');
+    setDateTo('');
     setPage(1);
-  }
+  }, []);
 
   function handleDeleteConfirm() {
     if (!deleteTarget) return;
@@ -137,17 +155,86 @@ export default function LeadsPage() {
 
       {/* Filter bar */}
       <div className="bg-white rounded-xl p-4 shadow-card mb-6">
-        <div className="flex flex-wrap gap-3 items-center">
-          <Select
+        <div className="flex flex-wrap gap-3 items-end">
+          {/* Search */}
+          <div className="relative w-64">
+            <Search
+              size={16}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+            />
+            <input
+              type="text"
+              placeholder="Search by name..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              className={clsx(
+                'w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm outline-none',
+                'transition-all duration-200',
+                'focus:ring-2 focus:ring-primary/20 focus:border-primary',
+                'placeholder:text-slate-400'
+              )}
+            />
+          </div>
+
+          {/* Source */}
+          <select
             value={source}
             onChange={(e) => {
               setSource(e.target.value);
               setPage(1);
             }}
-            placeholder="All sources"
-            options={SOURCE_OPTIONS}
+            className="px-3 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white cursor-pointer"
+          >
+            <option value="">All Sources</option>
+            {SOURCE_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+
+          {/* Rating */}
+          <select
+            value={rating}
+            onChange={(e) => {
+              setRating(e.target.value);
+              setPage(1);
+            }}
+            className="px-3 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white cursor-pointer"
+          >
+            {RATING_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+
+          {/* Date From */}
+          <input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => {
+              setDateFrom(e.target.value);
+              setPage(1);
+            }}
+            className="px-3 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
           />
 
+          {/* Date To */}
+          <input
+            type="date"
+            value={dateTo}
+            onChange={(e) => {
+              setDateTo(e.target.value);
+              setPage(1);
+            }}
+            className="px-3 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+          />
+
+          {/* Clear Filters */}
           {hasFilters && (
             <Button variant="ghost" size="sm" onClick={clearFilters}>
               <X size={14} />

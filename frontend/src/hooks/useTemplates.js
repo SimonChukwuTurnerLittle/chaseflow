@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '../api/client';
 import * as templatesApi from '../api/templatesApi';
 
 export const useTemplates = (serviceId) => {
@@ -8,7 +9,7 @@ export const useTemplates = (serviceId) => {
     queryFn: () => templatesApi.getTemplates(serviceId).then(res => res.data),
     enabled: !!serviceId,
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(getErrorMessage(err));
     },
   });
 };
@@ -19,7 +20,7 @@ export const useUnassignedTemplates = (serviceId) => {
     queryFn: () => templatesApi.getUnassignedTemplates(serviceId).then(res => res.data),
     enabled: !!serviceId,
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(getErrorMessage(err));
     },
   });
 };
@@ -33,7 +34,7 @@ export const useCreateTemplate = () => {
       queryClient.invalidateQueries({ queryKey: ['templates'] });
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(getErrorMessage(err));
     },
   });
 };
@@ -48,7 +49,7 @@ export const useUpdateTemplate = () => {
       queryClient.invalidateQueries({ queryKey: ['sequences'] });
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(getErrorMessage(err));
     },
   });
 };
@@ -63,7 +64,7 @@ export const useDuplicateTemplate = () => {
       toast.success('Template duplicated');
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(getErrorMessage(err));
     },
   });
 };
@@ -78,7 +79,7 @@ export const useAssignTemplate = () => {
       queryClient.invalidateQueries({ queryKey: ['sequences'] });
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(getErrorMessage(err));
     },
   });
 };
@@ -93,7 +94,7 @@ export const useUnassignTemplate = () => {
       queryClient.invalidateQueries({ queryKey: ['sequences'] });
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(getErrorMessage(err));
     },
   });
 };
@@ -109,7 +110,7 @@ export const useDeleteTemplate = () => {
       toast.success('Template deleted');
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(getErrorMessage(err));
     },
   });
 };

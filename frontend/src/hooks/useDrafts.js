@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '../api/client';
 import * as draftsApi from '../api/draftsApi';
 
 export const useDrafts = (params) => {
@@ -7,7 +8,7 @@ export const useDrafts = (params) => {
     queryKey: ['drafts', params],
     queryFn: () => draftsApi.getDrafts(params).then(res => res.data),
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(getErrorMessage(err));
     },
   });
 };
@@ -18,7 +19,7 @@ export const useDraft = (id) => {
     queryFn: () => draftsApi.getDraft(id).then(res => res.data),
     enabled: !!id,
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(getErrorMessage(err));
     },
   });
 };
@@ -32,7 +33,7 @@ export const useUpdateDraft = () => {
       queryClient.invalidateQueries({ queryKey: ['drafts'] });
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(getErrorMessage(err));
     },
   });
 };
@@ -47,7 +48,7 @@ export const useApproveDraft = () => {
       toast.success('Draft approved');
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(getErrorMessage(err));
     },
   });
 };
@@ -62,7 +63,7 @@ export const useRejectDraft = () => {
       toast.success('Draft rejected');
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(getErrorMessage(err));
     },
   });
 };

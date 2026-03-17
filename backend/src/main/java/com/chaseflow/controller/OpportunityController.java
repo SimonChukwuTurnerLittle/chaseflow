@@ -21,8 +21,15 @@ public class OpportunityController {
 
     @GetMapping
     public ResponseEntity<Page<OpportunityResponse>> listOpportunities(
-            @RequestParam(required = false) String status, Pageable pageable) {
-        return ResponseEntity.ok(opportunityService.listOpportunities(status, pageable));
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String temperature,
+            @RequestParam(required = false) String service,
+            @RequestParam(required = false) String dateFrom,
+            @RequestParam(required = false) String dateTo,
+            Pageable pageable) {
+        return ResponseEntity.ok(opportunityService.listOpportunities(
+                search, status, temperature, service, dateFrom, dateTo, pageable));
     }
 
     @PostMapping

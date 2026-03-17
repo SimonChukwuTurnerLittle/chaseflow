@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '../api/client';
 import * as opportunitiesApi from '../api/opportunitiesApi';
 
 export const useOpportunities = (params) => {
@@ -7,7 +8,7 @@ export const useOpportunities = (params) => {
     queryKey: ['opportunities', params],
     queryFn: () => opportunitiesApi.getOpportunities(params).then(res => res.data),
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(getErrorMessage(err));
     },
   });
 };
@@ -18,7 +19,7 @@ export const useOpportunity = (id) => {
     queryFn: () => opportunitiesApi.getOpportunity(id).then(res => res.data),
     enabled: !!id,
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(getErrorMessage(err));
     },
   });
 };
@@ -35,7 +36,7 @@ export const useCreateOpportunity = () => {
       }
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(getErrorMessage(err));
     },
   });
 };
@@ -49,7 +50,7 @@ export const useUpdateOpportunity = () => {
       queryClient.invalidateQueries({ queryKey: ['opportunities'] });
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(getErrorMessage(err));
     },
   });
 };
@@ -63,7 +64,7 @@ export const useCompleteOpportunity = () => {
       queryClient.invalidateQueries({ queryKey: ['opportunities'] });
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(getErrorMessage(err));
     },
   });
 };
@@ -77,7 +78,7 @@ export const useDeleteOpportunity = () => {
       queryClient.invalidateQueries({ queryKey: ['opportunities'] });
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(getErrorMessage(err));
     },
   });
 };

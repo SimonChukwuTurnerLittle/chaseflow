@@ -3,6 +3,8 @@ package com.chaseflow.controller;
 import com.chaseflow.dto.request.LeadRequest;
 import com.chaseflow.dto.request.NoteRequest;
 import com.chaseflow.dto.response.*;
+import com.chaseflow.dto.response.ActivityResponse;
+import com.chaseflow.service.ActivityService;
 import com.chaseflow.service.LeadService;
 import com.chaseflow.service.OpportunityService;
 import jakarta.validation.Valid;
@@ -24,11 +26,17 @@ public class LeadController {
 
     private final LeadService leadService;
     private final OpportunityService opportunityService;
+    private final ActivityService activityService;
 
     @GetMapping
     public ResponseEntity<Page<LeadResponse>> listLeads(
-            @RequestParam(required = false) String source, Pageable pageable) {
-        return ResponseEntity.ok(leadService.listLeads(source, pageable));
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String source,
+            @RequestParam(required = false) String rating,
+            @RequestParam(required = false) String dateFrom,
+            @RequestParam(required = false) String dateTo,
+            Pageable pageable) {
+        return ResponseEntity.ok(leadService.listLeads(search, source, rating, dateFrom, dateTo, pageable));
     }
 
     @PostMapping
@@ -55,6 +63,11 @@ public class LeadController {
     @GetMapping("/{id}/opportunities")
     public ResponseEntity<List<OpportunityResponse>> getOpportunities(@PathVariable UUID id) {
         return ResponseEntity.ok(opportunityService.getOpportunitiesForLead(id));
+    }
+
+    @GetMapping("/{id}/activities")
+    public ResponseEntity<List<ActivityResponse>> getActivities(@PathVariable UUID id) {
+        return ResponseEntity.ok(activityService.listActivitiesByLead(id));
     }
 
     @GetMapping("/{id}/notes")

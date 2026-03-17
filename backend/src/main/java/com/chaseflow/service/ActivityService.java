@@ -34,6 +34,14 @@ public class ActivityService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<ActivityResponse> listActivitiesByLead(UUID leadId) {
+        return activityRepository.findByOpportunityLeadIdOrderByDateAddedDesc(leadId).stream()
+                .filter(a -> a.getOpportunity().getTenantId().equals(tenantContext.currentTenantId()))
+                .map(this::toResponse)
+                .toList();
+    }
+
     @Transactional
     public ActivityResponse logActivity(UUID opportunityId, ActivityRequest request) {
         assertWriteAccess();

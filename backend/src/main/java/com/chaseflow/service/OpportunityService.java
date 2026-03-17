@@ -100,15 +100,25 @@ public class OpportunityService {
     }
 
     @Transactional(readOnly = true)
-    public Page<OpportunityResponse> listOpportunities(String status, Pageable pageable) {
+    public Page<OpportunityResponse> listOpportunities(String search, String status, String temperature,
+                                                        String service, String dateFrom, String dateTo,
+                                                        Pageable pageable) {
         UUID tenantId = tenantContext.currentTenantId();
-        Page<Opportunity> page;
-        if (status != null && !status.isBlank()) {
-            page = opportunityRepository.findByTenantIdAndStatus(tenantId,
-                    OpportunityStatus.valueOf(status.toUpperCase()), pageable);
-        } else {
-            page = opportunityRepository.findByTenantId(tenantId, pageable);
-        }
+
+        OpportunityStatus statusEnum = (status != null && !status.isBlank())
+                ? OpportunityStatus.valueOf(status.toUpperCase()) : null;
+        Temperature tempEnum = (temperature != null && !temperature.isBlank())
+                ? Temperature.valueOf(temperature.toUpperCase()) : null;
+        String serviceName = (service != null && !service.isBlank()) ? service : null;
+        String searchTerm = (search != null && !search.isBlank()) ? search : null;
+
+        LocalDateTime from = (dateFrom != null && !dateFrom.isBlank())
+                ? LocalDate.parse(dateFrom).atStartOfDay() : null;
+        LocalDateTime to = (dateTo != null && !dateTo.isBlank())
+                ? LocalDate.parse(dateTo).atTime(23, 59, 59) : null;
+
+        Page<Opportunity> page = opportunityRepository.searchOpportunities(
+                tenantId, searchTerm, statusEnum, tempEnum, from, to, serviceName, pageable);
         return page.map(this::toResponse);
     }
 
@@ -217,6 +227,7 @@ public class OpportunityService {
                 .temperature(o.getTemperature().name())
                 .opportunityType(o.getOpportunityType())
                 .notes(o.getNotes())
+                .handler(o.getLead().getHandler())
                 .dateCompleted(o.getDateCompleted())
                 .build();
     }

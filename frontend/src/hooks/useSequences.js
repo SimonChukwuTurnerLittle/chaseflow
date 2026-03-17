@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '../api/client';
 import * as sequencesApi from '../api/sequencesApi';
 
 export const useSequences = (serviceId) => {
@@ -8,7 +9,7 @@ export const useSequences = (serviceId) => {
     queryFn: () => sequencesApi.getSequences(serviceId).then(res => res.data),
     enabled: !!serviceId,
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(getErrorMessage(err));
     },
   });
 };
@@ -22,7 +23,7 @@ export const useCreateSequence = () => {
       queryClient.invalidateQueries({ queryKey: ['sequences'] });
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(getErrorMessage(err));
     },
   });
 };
@@ -36,7 +37,7 @@ export const useUpdateSequence = () => {
       queryClient.invalidateQueries({ queryKey: ['sequences'] });
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(getErrorMessage(err));
     },
   });
 };
@@ -50,7 +51,7 @@ export const useDeleteSequence = () => {
       queryClient.invalidateQueries({ queryKey: ['sequences'] });
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(getErrorMessage(err));
     },
   });
 };

@@ -27,5 +27,6 @@ public class OpportunityResponse {
     private String temperature;
     private String opportunityType;
     private String notes;
+    private String handler;
     private LocalDateTime dateCompleted;
 }

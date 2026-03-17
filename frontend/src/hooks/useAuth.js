@@ -1,6 +1,7 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '../api/client';
 import * as authApi from '../api/authApi';
 import useAuthStore from '../store/authStore';
 
@@ -16,7 +17,7 @@ export const useLogin = () => {
       navigate('/dashboard');
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(getErrorMessage(err));
     },
   });
 };
@@ -31,7 +32,7 @@ export const useRegister = () => {
       navigate('/login');
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(getErrorMessage(err));
     },
   });
 };
@@ -49,7 +50,7 @@ export const useMe = () => {
       return data;
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(getErrorMessage(err));
     },
   });
 };

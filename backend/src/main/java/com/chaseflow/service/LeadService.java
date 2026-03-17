@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -67,14 +68,21 @@ public class LeadService {
     }
 
     @Transactional(readOnly = true)
-    public Page<LeadResponse> listLeads(String source, Pageable pageable) {
+    public Page<LeadResponse> listLeads(String search, String source, String rating,
+                                         String dateFrom, String dateTo, Pageable pageable) {
         UUID tenantId = tenantContext.currentTenantId();
-        Page<Lead> page;
-        if (source != null && !source.isBlank()) {
-            page = leadRepository.findByTenantIdAndSourceContainingIgnoreCase(tenantId, source, pageable);
-        } else {
-            page = leadRepository.findByTenantId(tenantId, pageable);
-        }
+
+        String searchTerm = (search != null && !search.isBlank()) ? search : null;
+        String sourceTerm = (source != null && !source.isBlank()) ? source : null;
+        String ratingTerm = (rating != null && !rating.isBlank()) ? rating : null;
+
+        LocalDateTime from = (dateFrom != null && !dateFrom.isBlank())
+                ? java.time.LocalDate.parse(dateFrom).atStartOfDay() : null;
+        LocalDateTime to = (dateTo != null && !dateTo.isBlank())
+                ? java.time.LocalDate.parse(dateTo).atTime(23, 59, 59) : null;
+
+
+        Page<Lead> page = leadRepository.searchLeads(tenantId, searchTerm, sourceTerm, ratingTerm, from, to, pageable);
         return page.map(this::toResponse);
     }
 

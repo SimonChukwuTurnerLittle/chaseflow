@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '../api/client';
 import * as servicesApi from '../api/servicesApi';
 import * as categoriesApi from '../api/categoriesApi';
 
@@ -8,7 +9,7 @@ export const useServices = () => {
     queryKey: ['services'],
     queryFn: () => servicesApi.getServices().then(res => res.data),
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(getErrorMessage(err));
     },
   });
 };
@@ -19,7 +20,7 @@ export const useService = (id) => {
     queryFn: () => servicesApi.getService(id).then(res => res.data),
     enabled: !!id,
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(getErrorMessage(err));
     },
   });
 };
@@ -34,7 +35,7 @@ export const useCreateService = () => {
       toast.success('Service created successfully');
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(getErrorMessage(err));
     },
   });
 };
@@ -48,7 +49,7 @@ export const useUpdateService = () => {
       queryClient.invalidateQueries({ queryKey: ['services'] });
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(getErrorMessage(err));
     },
   });
 };
@@ -62,7 +63,7 @@ export const useDeleteService = () => {
       queryClient.invalidateQueries({ queryKey: ['services'] });
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(getErrorMessage(err));
     },
   });
 };
@@ -72,7 +73,7 @@ export const useCategories = () => {
     queryKey: ['categories'],
     queryFn: () => categoriesApi.getCategories().then(res => res.data),
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(getErrorMessage(err));
     },
   });
 };
@@ -87,7 +88,7 @@ export const useCreateCategory = () => {
       queryClient.invalidateQueries({ queryKey: ['services'] });
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(getErrorMessage(err));
     },
   });
 };
@@ -102,7 +103,7 @@ export const useUpdateCategory = () => {
       queryClient.invalidateQueries({ queryKey: ['services'] });
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(getErrorMessage(err));
     },
   });
 };
@@ -117,7 +118,7 @@ export const useDeleteCategory = () => {
       queryClient.invalidateQueries({ queryKey: ['services'] });
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(getErrorMessage(err));
     },
   });
 };
