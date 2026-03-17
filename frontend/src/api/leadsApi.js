@@ -15,6 +15,9 @@ export const updateLead = (id, data) =>
 export const deleteLead = (id) =>
   client.delete(`/leads/${id}`);
 
+export const getLeadOpportunities = (leadId) =>
+  client.get(`/leads/${leadId}/opportunities`);
+
 export const getLeadNotes = (leadId) =>
   client.get(`/leads/${leadId}/notes`);
 

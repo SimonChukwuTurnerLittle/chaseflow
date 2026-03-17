@@ -66,6 +66,7 @@ public class LeadService {
         return toResponse(lead);
     }
 
+    @Transactional(readOnly = true)
     public Page<LeadResponse> listLeads(String source, Pageable pageable) {
         UUID tenantId = tenantContext.currentTenantId();
         Page<Lead> page;
@@ -77,6 +78,7 @@ public class LeadService {
         return page.map(this::toResponse);
     }
 
+    @Transactional(readOnly = true)
     public LeadResponse getLead(UUID id) {
         return toResponse(findLeadByIdAndTenant(id));
     }
@@ -119,6 +121,7 @@ public class LeadService {
         leadRepository.save(lead);
     }
 
+    @Transactional(readOnly = true)
     public List<NoteResponse> getNotes(UUID leadId) {
         findLeadByIdAndTenant(leadId);
         return noteRepository.findByLeadIdOrderByDateAddedDesc(leadId).stream()
@@ -139,6 +142,7 @@ public class LeadService {
         return toNoteResponse(note);
     }
 
+    @Transactional(readOnly = true)
     public List<RelatedFileResponse> getFiles(UUID leadId) {
         findLeadByIdAndTenant(leadId);
         return relatedFileRepository.findByLeadIdOrderByDateAddedDesc(leadId).stream()

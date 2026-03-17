@@ -14,7 +14,11 @@
       "Bash(python .claude/skills/ui-ux-pro-max/scripts/search.py \"CRM detail page tabs card layout\" --domain ux -n 5)",
       "Bash(mvn clean:*)",
       "Bash(./mvnw clean:*)",
-      "Bash(java -version)"
+      "Bash(java -version)",
+      "Bash(python .claude/skills/ui-ux-pro-max/scripts/search.py \"CRM SaaS dashboard admin professional\" --design-system -p \"ChaseFlow\")",
+      "Bash(find 'c:/Users/Simon Chukwu/Documents/chaseflow/backend' -name *.log)",
+      "Bash(python3 .claude/skills/ui-ux-pro-max/scripts/search.py \"CRM SaaS sales opportunity detail dashboard professional\" --design-system -p \"ChaseFlow CRM\")",
+      "Bash(python3 .claude/skills/ui-ux-pro-max/scripts/search.py \"CRM detail page dashboard clean professional data\" --domain ux)"
     ]
   }
 }

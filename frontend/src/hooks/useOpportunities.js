@@ -28,9 +28,11 @@ export const useCreateOpportunity = () => {
 
   return useMutation({
     mutationFn: (data) => opportunitiesApi.createOpportunity(data),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['opportunities'] });
-      queryClient.invalidateQueries({ queryKey: ['leads'] });
+      if (variables?.leadId) {
+        queryClient.invalidateQueries({ queryKey: ['leads', variables.leadId, 'opportunities'] });
+      }
     },
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Something went wrong');
@@ -43,6 +45,20 @@ export const useUpdateOpportunity = () => {
 
   return useMutation({
     mutationFn: ({ id, data }) => opportunitiesApi.updateOpportunity(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['opportunities'] });
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || 'Something went wrong');
+    },
+  });
+};
+
+export const useCompleteOpportunity = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id) => opportunitiesApi.completeOpportunity(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['opportunities'] });
     },

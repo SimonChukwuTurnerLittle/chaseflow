@@ -66,6 +66,17 @@ export const useDeleteLead = () => {
   });
 };
 
+export const useLeadOpportunities = (leadId) => {
+  return useQuery({
+    queryKey: ['leads', leadId, 'opportunities'],
+    queryFn: () => leadsApi.getLeadOpportunities(leadId).then(res => res.data),
+    enabled: !!leadId,
+    onError: (err) => {
+      toast.error(err.response?.data?.message || 'Something went wrong');
+    },
+  });
+};
+
 export const useLeadNotes = (leadId) => {
   return useQuery({
     queryKey: ['leads', leadId, 'notes'],

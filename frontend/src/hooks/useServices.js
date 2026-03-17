@@ -84,6 +84,37 @@ export const useCreateCategory = () => {
     mutationFn: (data) => categoriesApi.createCategory(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.invalidateQueries({ queryKey: ['services'] });
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || 'Something went wrong');
+    },
+  });
+};
+
+export const useUpdateCategory = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }) => categoriesApi.updateCategory(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.invalidateQueries({ queryKey: ['services'] });
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || 'Something went wrong');
+    },
+  });
+};
+
+export const useDeleteCategory = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id) => categoriesApi.deleteCategory(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.invalidateQueries({ queryKey: ['services'] });
     },
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Something went wrong');

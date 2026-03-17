@@ -36,6 +36,7 @@ public class ServiceManagementService {
 
     // ── Service Categories ──
 
+    @Transactional(readOnly = true)
     public List<ServiceCategoryResponse> listCategories() {
         UUID tenantId = tenantContext.currentTenantId();
         return serviceCategoryRepository.findByTenantIdOrderBySortOrder(tenantId).stream()
@@ -80,6 +81,7 @@ public class ServiceManagementService {
 
     // ── Services ──
 
+    @Transactional(readOnly = true)
     public List<ServiceResponse> listServices() {
         UUID tenantId = tenantContext.currentTenantId();
         return serviceRepository.findByTenantIdOrderBySortOrder(tenantId).stream()
@@ -87,6 +89,7 @@ public class ServiceManagementService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public ServiceResponse getService(UUID id) {
         return toServiceResponseWithSequences(findServiceByIdAndTenant(id));
     }

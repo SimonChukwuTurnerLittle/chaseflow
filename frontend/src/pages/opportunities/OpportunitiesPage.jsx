@@ -4,7 +4,6 @@ import { format } from 'date-fns';
 import { Plus, Search, Eye, Trash2, Target, X } from 'lucide-react';
 import { clsx } from 'clsx';
 
-import { PageHeader } from '@/components/shared/PageHeader';
 import { TemperatureBadge } from '@/components/shared/TemperatureBadge';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { Table } from '@/components/ui/Table';
@@ -93,7 +92,7 @@ export default function OpportunitiesPage() {
       label: 'Lead Name',
       render: (value, row) => (
         <Link
-          to={`/leads/${row.leadId}`}
+          to={`/opportunities/${row.id}`}
           className="font-medium text-cta hover:underline"
         >
           {value || row.lead?.name || '-'}
@@ -144,8 +143,8 @@ export default function OpportunitiesPage() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate(`/leads/${row.leadId}`)}
-            title="View Lead"
+            onClick={() => navigate(`/opportunities/${row.id}`)}
+            title="View Opportunity"
           >
             <Eye size={16} />
           </Button>
@@ -164,12 +163,13 @@ export default function OpportunitiesPage() {
 
   return (
     <>
-      <PageHeader title="Opportunities">
+      {/* Actions */}
+      <div className="flex justify-end mb-6">
         <Button onClick={() => setCreateModalOpen(true)}>
           <Plus size={16} />
           New Opportunity
         </Button>
-      </PageHeader>
+      </div>
 
       {/* Filter bar */}
       <div className="bg-white rounded-xl p-4 shadow-card mb-6">

@@ -14,6 +14,7 @@ const DashboardPage = React.lazy(() => import('./pages/dashboard/DashboardPage')
 const LeadsPage = React.lazy(() => import('./pages/leads/LeadsPage'));
 const LeadDetailPage = React.lazy(() => import('./pages/leads/LeadDetailPage'));
 const OpportunitiesPage = React.lazy(() => import('./pages/opportunities/OpportunitiesPage'));
+const OpportunityDetailPage = React.lazy(() => import('./pages/opportunities/OpportunityDetailPage'));
 const DraftsPage = React.lazy(() => import('./pages/drafts/DraftsPage'));
 const ServicesPage = React.lazy(() => import('./pages/services/ServicesPage'));
 const SettingsPage = React.lazy(() => import('./pages/settings/SettingsPage'));
@@ -108,6 +109,16 @@ export default function App() {
               <ProtectedRoute>
                 <AppLayout>
                   <OpportunitiesPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/opportunities/:id"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <OpportunityDetailPage />
                 </AppLayout>
               </ProtectedRoute>
             }

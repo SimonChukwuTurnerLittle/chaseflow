@@ -14,3 +14,6 @@ export const updateOpportunity = (id, data) =>
 
 export const deleteOpportunity = (id) =>
   client.delete(`/opportunities/${id}`);
+
+export const completeOpportunity = (id) =>
+  client.post(`/opportunities/${id}/complete`);

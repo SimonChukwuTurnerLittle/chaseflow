@@ -10,6 +10,7 @@ import com.chaseflow.exception.AccessDeniedException;
 import com.chaseflow.exception.NotFoundException;
 import com.chaseflow.repository.ChaseSequenceRepository;
 import com.chaseflow.repository.ServiceRepository;
+import com.chaseflow.repository.TemplateRepository;
 import com.chaseflow.tenant.TenantContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,8 +25,10 @@ public class ChaseSequenceService {
 
     private final ChaseSequenceRepository chaseSequenceRepository;
     private final ServiceRepository serviceRepository;
+    private final TemplateRepository templateRepository;
     private final TenantContext tenantContext;
 
+    @Transactional(readOnly = true)
     public List<ChaseSequenceResponse> listSequences(UUID serviceId) {
         verifyServiceBelongsToTenant(serviceId);
         return chaseSequenceRepository.findByServiceIdOrderByTemperatureAscStepNumberAsc(serviceId).stream()
@@ -97,19 +100,20 @@ public class ChaseSequenceService {
     }
 
     private ChaseSequenceResponse toResponse(ChaseSequence seq) {
+        UUID serviceId = seq.getService().getId();
         return ChaseSequenceResponse.builder()
                 .id(seq.getId())
-                .serviceId(seq.getService().getId())
+                .serviceId(serviceId)
                 .temperature(seq.getTemperature().name())
                 .stepNumber(seq.getStepNumber())
                 .delayDays(seq.getDelayDays())
                 .isFinalStep(seq.getIsFinalStep())
                 .stopOnReply(seq.getStopOnReply())
-                .templates(seq.getTemplates().stream()
+                .templates(templateRepository.findByServiceIdAndStepNumber(serviceId, seq.getStepNumber()).stream()
                         .map(t -> TemplateResponse.builder()
                                 .id(t.getId())
-                                .serviceId(seq.getService().getId())
-                                .chaseSequenceId(seq.getId())
+                                .serviceId(serviceId)
+                                .stepNumber(seq.getStepNumber())
                                 .templateTitle(t.getTemplateTitle())
                                 .templateDescription(t.getTemplateDescription())
                                 .templateType(t.getTemplateType().name())

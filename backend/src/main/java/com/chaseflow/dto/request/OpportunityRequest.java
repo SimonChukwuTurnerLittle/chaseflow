@@ -2,6 +2,7 @@ package com.chaseflow.dto.request;
 
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Data
@@ -15,4 +16,5 @@ public class OpportunityRequest {
     private String temperature;
     private String opportunityType;
     private String notes;
+    private LocalDate nextChaseDate;
 }

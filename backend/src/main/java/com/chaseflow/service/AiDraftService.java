@@ -40,12 +40,14 @@ public class AiDraftService {
     private final TwilioWhatsAppClient twilioWhatsAppClient;
     private final TenantContext tenantContext;
 
+    @Transactional(readOnly = true)
     public Page<AiDraftResponse> listPendingDrafts(Pageable pageable) {
         UUID tenantId = tenantContext.currentTenantId();
         return aiDraftRepository.findByTenantIdAndStatus(tenantId, DraftStatus.PENDING, pageable)
                 .map(this::toResponse);
     }
 
+    @Transactional(readOnly = true)
     public AiDraftResponse getDraft(UUID id) {
         AiDraft draft = findDraftById(id);
         return toResponse(draft);

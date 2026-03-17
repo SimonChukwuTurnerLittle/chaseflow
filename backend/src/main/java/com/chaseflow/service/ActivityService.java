@@ -26,6 +26,7 @@ public class ActivityService {
     private final OpportunityRepository opportunityRepository;
     private final TenantContext tenantContext;
 
+    @Transactional(readOnly = true)
     public List<ActivityResponse> listActivities(UUID opportunityId) {
         findOpportunityByIdAndTenant(opportunityId);
         return activityRepository.findByOpportunityIdOrderByDateAddedDesc(opportunityId).stream()

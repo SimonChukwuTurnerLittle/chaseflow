@@ -90,10 +90,16 @@ public class OpportunityService {
                     .ifPresent(step1 -> opportunity.setNextChaseDate(LocalDate.now().plusDays(step1.getDelayDays())));
         }
 
+        // Allow explicit nextChaseDate from request to override sequence-derived value
+        if (request.getNextChaseDate() != null) {
+            opportunity.setNextChaseDate(request.getNextChaseDate());
+        }
+
         Opportunity saved = opportunityRepository.save(opportunity);
         return toResponse(saved);
     }
 
+    @Transactional(readOnly = true)
     public Page<OpportunityResponse> listOpportunities(String status, Pageable pageable) {
         UUID tenantId = tenantContext.currentTenantId();
         Page<Opportunity> page;
@@ -106,10 +112,12 @@ public class OpportunityService {
         return page.map(this::toResponse);
     }
 
+    @Transactional(readOnly = true)
     public OpportunityResponse getOpportunity(UUID id) {
         return toResponse(findByIdAndTenant(id));
     }
 
+    @Transactional(readOnly = true)
     public List<OpportunityResponse> getOpportunitiesForLead(UUID leadId) {
         return opportunityRepository.findByLeadId(leadId).stream()
                 .filter(o -> o.getTenantId().equals(tenantContext.currentTenantId()))

@@ -34,10 +34,10 @@ export function CreateOpportunityModal({ open, onClose, prefilledLeadId }) {
   const createMutation = useCreateOpportunity();
   const { data: servicesData } = useServices();
 
-  const services = servicesData?.data ?? [];
+  const services = servicesData ?? [];
   const serviceOptions = services.map((s) => ({
     value: s.id,
-    label: s.name,
+    label: s.serviceName,
   }));
 
   const {

@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { clsx } from 'clsx';
-import { Plus, Trash2, Clipboard } from 'lucide-react';
+import { Plus, Trash2, Clipboard, Info, CheckCircle2, Circle } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
@@ -26,6 +26,12 @@ const TEMPERATURES = [
 
 const CHANNELS = ['EMAIL', 'SMS', 'WHATSAPP'];
 
+const CHANNEL_COLORS = {
+  EMAIL: { dot: 'bg-channel-email', label: 'text-channel-email' },
+  SMS: { dot: 'bg-channel-sms', label: 'text-channel-sms' },
+  WHATSAPP: { dot: 'bg-channel-whatsapp', label: 'text-channel-whatsapp' },
+};
+
 const TOKENS = [
   '{{first_name}}',
   '{{last_name}}',
@@ -34,11 +40,35 @@ const TOKENS = [
   '{{handler_name}}',
 ];
 
+// Dots showing which channels have a template written for this step
+function TemplateStatusDots({ templates }) {
+  const byChannel = Object.fromEntries(
+    (templates || []).map((t) => [t.templateType, t])
+  );
+
+  return (
+    <div className="flex items-center gap-1.5">
+      {CHANNELS.map((ch) => {
+        const t = byChannel[ch];
+        const filled = !!t?.templateContent;
+        return (
+          <span key={ch} title={`${ch}: ${filled ? 'configured' : 'empty'}`}>
+            {filled ? (
+              <CheckCircle2 size={13} className={CHANNEL_COLORS[ch].label} />
+            ) : (
+              <Circle size={13} className="text-slate-300" />
+            )}
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
 function TemplateEditor({ sequence, service }) {
   const updateTemplate = useUpdateTemplate();
   const [activeChannel, setActiveChannel] = useState('EMAIL');
 
-  // Derive template state from sequence.templates (array keyed by templateType)
   const templatesByChannel = Object.fromEntries(
     (sequence.templates || []).map((t) => [t.templateType, t])
   );
@@ -94,102 +124,130 @@ function TemplateEditor({ sequence, service }) {
   }
 
   const charLimit = activeChannel === 'SMS' ? 160 : activeChannel === 'WHATSAPP' ? 1024 : undefined;
+  const contentLength = current.content?.length ?? 0;
 
   return (
-    <div className="mt-3 border border-slate-200 rounded-xl p-4 bg-slate-50/50">
-      {/* Channel tabs */}
-      <div className="flex gap-1 mb-4 bg-slate-100 rounded-lg p-1 w-fit">
-        {CHANNELS.map((ch) => (
-          <button
-            key={ch}
-            type="button"
-            onClick={() => setActiveChannel(ch)}
-            className={clsx(
-              'px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 cursor-pointer',
-              activeChannel === ch
-                ? 'bg-white shadow-sm text-primary'
-                : 'text-slate-500 hover:text-slate-700'
-            )}
-          >
-            {ch}
-          </button>
-        ))}
+    <div className="mt-3 border border-slate-200 rounded-xl bg-slate-50/40 overflow-hidden">
+      {/* Shared-template notice */}
+      <div className="flex items-start gap-2 px-4 py-2.5 bg-blue-50 border-b border-blue-100">
+        <Info size={13} className="text-cta mt-0.5 shrink-0" />
+        <p className="text-xs text-blue-700">
+          Templates for <span className="font-semibold">Step {sequence.stepNumber}</span> are shared across{' '}
+          <span className="font-semibold">all temperature tracks</span>. Temperature only controls timing.
+        </p>
       </div>
 
-      <div className="space-y-3">
-        <Input
-          label="Template Title"
-          value={current.title}
-          onChange={(e) => updateField('title', e.target.value)}
-          placeholder={`${activeChannel} template title`}
-        />
-
-        {activeChannel === 'EMAIL' && (
-          <Input
-            label="Subject"
-            value={current.subject}
-            onChange={(e) => updateField('subject', e.target.value)}
-            placeholder="Email subject line"
-          />
-        )}
-
-        <Textarea
-          label="Content"
-          value={current.content}
-          onChange={(e) => updateField('content', e.target.value)}
-          placeholder="Write your template content..."
-          maxLength={charLimit}
-          className={activeChannel === 'EMAIL' ? '[&_textarea]:font-mono [&_textarea]:min-h-[200px]' : ''}
-        />
-
-        <Textarea
-          label="Guidance for AI when personalising"
-          value={current.aiPromptHint}
-          onChange={(e) => updateField('aiPromptHint', e.target.value)}
-          placeholder="e.g. Keep the tone friendly but professional..."
-        />
-
-        {/* Use AI toggle */}
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={current.useAi}
-            onChange={(e) => updateField('useAi', e.target.checked)}
-            className="w-4 h-4 rounded border-slate-300 text-cta focus:ring-cta/50 cursor-pointer"
-          />
-          <span className="text-sm font-medium text-primary">
-            Use AI personalisation
-          </span>
-        </label>
-
-        {/* Available Tokens */}
-        <div className="bg-slate-50 rounded-lg p-3 mt-3">
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
-            Available Tokens
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            {TOKENS.map((token) => (
+      <div className="p-4">
+        {/* Channel tabs */}
+        <div className="flex gap-1 mb-4 bg-slate-100 rounded-lg p-1 w-fit">
+          {CHANNELS.map((ch) => {
+            const t = templatesByChannel[ch];
+            const filled = !!t?.templateContent;
+            return (
               <button
-                key={token}
+                key={ch}
                 type="button"
-                onClick={() => copyToken(token)}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-white border border-slate-200 text-xs font-mono text-slate-600 hover:border-cta hover:text-cta transition-colors duration-200 cursor-pointer"
+                onClick={() => setActiveChannel(ch)}
+                className={clsx(
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 cursor-pointer',
+                  activeChannel === ch
+                    ? 'bg-white shadow-sm text-primary'
+                    : 'text-slate-500 hover:text-slate-700'
+                )}
               >
-                <Clipboard size={10} />
-                {token}
+                {filled ? (
+                  <CheckCircle2 size={11} className={CHANNEL_COLORS[ch].label} />
+                ) : (
+                  <Circle size={11} className="text-slate-300" />
+                )}
+                {ch}
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
 
-        <div className="flex justify-end">
-          <Button
-            size="sm"
-            onClick={handleSaveTemplate}
-            loading={updateTemplate.isPending}
-          >
-            Save Template
-          </Button>
+        <div className="space-y-3">
+          <Input
+            label="Template Title"
+            value={current.title}
+            onChange={(e) => updateField('title', e.target.value)}
+            placeholder={`${activeChannel} template title`}
+          />
+
+          {activeChannel === 'EMAIL' && (
+            <Input
+              label="Subject Line"
+              value={current.subject}
+              onChange={(e) => updateField('subject', e.target.value)}
+              placeholder="Email subject line"
+            />
+          )}
+
+          <div>
+            <Textarea
+              label="Content"
+              value={current.content}
+              onChange={(e) => updateField('content', e.target.value)}
+              placeholder="Write your message..."
+              maxLength={charLimit}
+              className={activeChannel === 'EMAIL' ? '[&_textarea]:font-mono [&_textarea]:min-h-[180px]' : ''}
+            />
+            {charLimit && (
+              <p
+                className={clsx(
+                  'text-xs mt-1 text-right tabular-nums',
+                  contentLength > charLimit * 0.9 ? 'text-amber-600' : 'text-slate-400'
+                )}
+              >
+                {contentLength} / {charLimit}
+              </p>
+            )}
+          </div>
+
+          <Textarea
+            label="AI personalisation guidance"
+            value={current.aiPromptHint}
+            onChange={(e) => updateField('aiPromptHint', e.target.value)}
+            placeholder="e.g. Keep the tone friendly but professional..."
+          />
+
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={current.useAi}
+              onChange={(e) => updateField('useAi', e.target.checked)}
+              className="w-4 h-4 rounded border-slate-300 text-cta focus:ring-cta/50 cursor-pointer"
+            />
+            <span className="text-sm font-medium text-primary">
+              Use AI personalisation on send
+            </span>
+          </label>
+
+          {/* Available Tokens */}
+          <div className="bg-white rounded-lg border border-slate-200 p-3">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+              Available Tokens — click to copy
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {TOKENS.map((token) => (
+                <button
+                  key={token}
+                  type="button"
+                  onClick={() => copyToken(token)}
+                  className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-slate-50 border border-slate-200 text-xs font-mono text-slate-600 hover:border-cta hover:text-cta hover:bg-blue-50 transition-colors duration-200 cursor-pointer"
+                >
+                  <Clipboard size={10} />
+                  {token}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-1">
+            <Button size="sm" onClick={handleSaveTemplate} loading={updateTemplate.isPending}>
+              Save Template
+            </Button>
+          </div>
         </div>
       </div>
     </div>
@@ -225,6 +283,7 @@ function StepCard({ sequence, service, onDelete }) {
         <div className="flex items-center justify-between gap-3 mb-3">
           <div className="flex items-center gap-3">
             <Badge variant="default">Step {sequence.stepNumber}</Badge>
+
             <div className="flex items-center gap-1.5">
               <span className="text-xs text-slate-500">after</span>
               <input
@@ -237,16 +296,19 @@ function StepCard({ sequence, service, onDelete }) {
               />
               <span className="text-xs text-slate-500">days</span>
             </div>
+
+            {/* Template status dots */}
+            <TemplateStatusDots templates={sequence.templates} />
           </div>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+          <button
+            type="button"
+            title="Delete step"
             onClick={() => onDelete(sequence)}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 cursor-pointer transition-colors duration-150"
           >
             <Trash2 size={14} />
-          </Button>
+          </button>
         </div>
 
         {/* Toggles */}
@@ -278,7 +340,6 @@ function StepCard({ sequence, service, onDelete }) {
           </label>
         </div>
 
-        {/* Edit Templates toggle */}
         <Button
           variant="secondary"
           size="sm"
@@ -307,11 +368,15 @@ export default function ChaseSequenceModal({ open, onClose, service }) {
     .filter((s) => s.temperature === activeTemp)
     .sort((a, b) => a.stepNumber - b.stepNumber);
 
+  // Count template coverage: how many steps have at least one channel configured
+  const stepNumbers = [...new Set(sequences.filter((s) => s.temperature === 'HOT').map((s) => s.stepNumber))];
+  const configuredSteps = stepNumbers.filter((n) => {
+    const step = sequences.find((s) => s.temperature === 'HOT' && s.stepNumber === n);
+    return step?.templates?.some((t) => !!t.templateContent);
+  });
+
   function handleAddStep() {
-    const maxStep = filteredSteps.reduce(
-      (max, s) => Math.max(max, s.stepNumber),
-      0
-    );
+    const maxStep = filteredSteps.reduce((max, s) => Math.max(max, s.stepNumber), 0);
     createSequence.mutate({
       serviceId: service.id,
       data: {
@@ -344,32 +409,60 @@ export default function ChaseSequenceModal({ open, onClose, service }) {
       <Modal
         open={open}
         onClose={onClose}
-        title={`${service?.serviceName} \u2014 Chase Sequences`}
+        title={`${service?.serviceName} — Sequences & Templates`}
         size="lg"
       >
-        {/* Temperature tabs */}
-        <div className="flex gap-2 mb-5">
-          {TEMPERATURES.map((temp) => (
-            <button
-              key={temp.key}
-              type="button"
-              onClick={() => setActiveTemp(temp.key)}
-              className={clsx(
-                'px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer',
-                activeTemp === temp.key
-                  ? `${temp.bg} text-white`
-                  : `${temp.bgLight} ${temp.text} border ${temp.border} hover:opacity-80`
-              )}
-            >
-              {temp.label}
-              <span className="ml-1.5 text-xs opacity-75">
-                ({sequences.filter((s) => s.temperature === temp.key).length})
-              </span>
-            </button>
-          ))}
+        {/* Template progress summary */}
+        {!isLoading && stepNumbers.length > 0 && (
+          <div className="flex items-center gap-2 mb-4 px-3.5 py-2.5 bg-slate-50 rounded-xl border border-slate-200">
+            <div className="flex gap-1 items-center">
+              {stepNumbers.map((n) => {
+                const done = configuredSteps.includes(n);
+                return (
+                  <span key={n} className="flex items-center gap-1">
+                    {done ? (
+                      <CheckCircle2 size={14} className="text-green-500" />
+                    ) : (
+                      <Circle size={14} className="text-slate-300" />
+                    )}
+                    <span className="text-xs text-slate-500">Step {n}</span>
+                  </span>
+                );
+              })}
+            </div>
+            <span className="ml-auto text-xs text-slate-400">
+              {configuredSteps.length}/{stepNumbers.length} steps configured
+            </span>
+          </div>
+        )}
+
+        {/* Temperature tabs — timing only note */}
+        <div className="mb-1">
+          <div className="flex gap-2 mb-1">
+            {TEMPERATURES.map((temp) => (
+              <button
+                key={temp.key}
+                type="button"
+                onClick={() => setActiveTemp(temp.key)}
+                className={clsx(
+                  'px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer',
+                  activeTemp === temp.key
+                    ? `${temp.bg} text-white`
+                    : `${temp.bgLight} ${temp.text} border ${temp.border} hover:opacity-80`
+                )}
+              >
+                {temp.label}
+                <span className="ml-1.5 text-xs opacity-75">
+                  ({sequences.filter((s) => s.temperature === temp.key).length})
+                </span>
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-slate-400 mb-4">
+            Temperature controls <span className="font-medium text-slate-500">timing only</span> — templates are shared across all tracks.
+          </p>
         </div>
 
-        {/* Steps timeline */}
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <Spinner size="md" />
@@ -391,7 +484,6 @@ export default function ChaseSequenceModal({ open, onClose, service }) {
           </div>
         )}
 
-        {/* Add step */}
         <button
           type="button"
           onClick={handleAddStep}
@@ -413,7 +505,7 @@ export default function ChaseSequenceModal({ open, onClose, service }) {
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDeleteStep}
         title="Delete Step"
-        message={`Delete Step ${deleteTarget?.stepNumber}? All associated templates will also be removed.`}
+        message={`Delete Step ${deleteTarget?.stepNumber}? Templates for this step will also be removed.`}
         confirmText="Delete"
         loading={deleteSequence.isPending}
       />

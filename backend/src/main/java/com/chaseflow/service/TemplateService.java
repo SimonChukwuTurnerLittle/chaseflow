@@ -27,6 +27,7 @@ public class TemplateService {
     private final ServiceRepository serviceRepository;
     private final TenantContext tenantContext;
 
+    @Transactional(readOnly = true)
     public List<TemplateResponse> listTemplates(UUID serviceId) {
         findServiceAndVerifyTenant(serviceId);
         return templateRepository.findByServiceId(serviceId).stream()

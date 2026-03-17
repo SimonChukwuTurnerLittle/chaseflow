@@ -36,6 +36,7 @@ import {
   useDeleteLead,
   useLeadNotes,
   useLeadFiles,
+  useLeadOpportunities,
   useUploadFile,
   useDeleteFile,
 } from '@/hooks/useLeads';
@@ -67,6 +68,7 @@ export default function LeadDetailPage() {
   const { data: lead, isLoading: leadLoading } = useLead(id);
   const { data: notesData } = useLeadNotes(id);
   const { data: filesData } = useLeadFiles(id);
+  const { data: opportunitiesData } = useLeadOpportunities(id);
 
   const { data: activitiesData } = useQuery({
     queryKey: ['leads', id, 'activities'],
@@ -90,7 +92,7 @@ export default function LeadDetailPage() {
   const notes = Array.isArray(notesData) ? notesData : notesData?.content ?? [];
   const files = Array.isArray(filesData) ? filesData : filesData?.content ?? [];
   const activities = Array.isArray(activitiesData) ? activitiesData : [];
-  const opportunities = leadData.opportunities ?? [];
+  const opportunities = Array.isArray(opportunitiesData) ? opportunitiesData : [];
 
   const fullName =
     [leadData.firstName, leadData.lastName].filter(Boolean).join(' ') || 'Lead';
