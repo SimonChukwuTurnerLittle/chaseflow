@@ -12,4 +12,6 @@ public interface TemplateRepository extends JpaRepository<Template, UUID> {
     List<Template> findByServiceId(UUID serviceId);
     List<Template> findByServiceIdAndStepNumber(UUID serviceId, Integer stepNumber);
     Optional<Template> findByServiceIdAndStepNumberAndTemplateType(UUID serviceId, Integer stepNumber, TemplateType templateType);
+    List<Template> findByServiceIdAndStepNumberIsNull(UUID serviceId);
+    List<Template> findByServiceIdAndTemplateTypeAndStepNumberIsNull(UUID serviceId, TemplateType templateType);
 }

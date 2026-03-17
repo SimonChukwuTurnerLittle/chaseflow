@@ -9,4 +9,6 @@ public class ChaseSequenceRequest {
     private Integer delayDays;
     private Boolean isFinalStep;
     private Boolean stopOnReply;
+    private Boolean useAiPersonalisation;
+    private String aiPersonalisationGuidance;
 }

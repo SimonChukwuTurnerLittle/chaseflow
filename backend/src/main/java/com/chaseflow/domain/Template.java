@@ -9,9 +9,7 @@ import org.hibernate.annotations.SQLRestriction;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "template", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"service_id", "step_number", "template_type"})
-})
+@Table(name = "template")
 @SQLRestriction("deleted = false")
 @Getter
 @Setter
@@ -24,7 +22,7 @@ public class Template extends BaseEntity {
     @JoinColumn(name = "service_id", nullable = false)
     private Service service;
 
-    @Column(name = "step_number", nullable = false)
+    @Column(name = "step_number")
     private Integer stepNumber;
 
     @Column(name = "template_title")
@@ -47,13 +45,6 @@ public class Template extends BaseEntity {
     @Column(name = "template_content_format", nullable = false)
     @Builder.Default
     private ContentFormat templateContentFormat = ContentFormat.HTML;
-
-    @Column(name = "ai_prompt_hint", columnDefinition = "TEXT")
-    private String aiPromptHint;
-
-    @Column(name = "use_ai", nullable = false)
-    @Builder.Default
-    private Boolean useAi = true;
 
     @Column(nullable = false)
     @Builder.Default

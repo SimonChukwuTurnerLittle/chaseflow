@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { Plus, Search, Eye, Trash2, Target, X } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -15,6 +14,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
 import { useOpportunities, useDeleteOpportunity } from '@/hooks/useOpportunities';
 import { CreateOpportunityModal } from './modals/CreateOpportunityModal';
+import { OpportunityDetailModal } from './modals/OpportunityDetailModal';
 
 const STATUS_OPTIONS = [
   { value: '', label: 'All Statuses' },
@@ -32,8 +32,6 @@ const TEMPERATURE_OPTIONS = [
 ];
 
 export default function OpportunitiesPage() {
-  const navigate = useNavigate();
-
   // Filter state
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
@@ -45,6 +43,7 @@ export default function OpportunitiesPage() {
 
   // Modal state
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [viewTargetId, setViewTargetId] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   // Build query params
@@ -91,12 +90,12 @@ export default function OpportunitiesPage() {
       key: 'leadName',
       label: 'Lead Name',
       render: (value, row) => (
-        <Link
-          to={`/opportunities/${row.id}`}
-          className="font-medium text-cta hover:underline"
+        <button
+          onClick={() => setViewTargetId(row.id)}
+          className="font-medium text-cta hover:underline cursor-pointer text-left"
         >
           {value || row.lead?.name || '-'}
-        </Link>
+        </button>
       ),
     },
     {
@@ -143,7 +142,7 @@ export default function OpportunitiesPage() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate(`/opportunities/${row.id}`)}
+            onClick={() => setViewTargetId(row.id)}
             title="View Opportunity"
           >
             <Eye size={16} />
@@ -239,7 +238,6 @@ export default function OpportunitiesPage() {
             className="px-3 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white cursor-pointer"
           >
             <option value="">All Services</option>
-            {/* Services will be loaded dynamically when API is ready */}
           </select>
 
           {/* Date From */}
@@ -315,6 +313,13 @@ export default function OpportunitiesPage() {
       <CreateOpportunityModal
         open={createModalOpen}
         onClose={() => setCreateModalOpen(false)}
+      />
+
+      {/* View Opportunity Modal */}
+      <OpportunityDetailModal
+        opportunityId={viewTargetId}
+        open={!!viewTargetId}
+        onClose={() => setViewTargetId(null)}
       />
 
       {/* Delete Confirm Dialog */}

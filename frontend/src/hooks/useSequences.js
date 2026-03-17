@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import * as sequencesApi from '../api/sequencesApi';
-import * as templatesApi from '../api/templatesApi';
 
 export const useSequences = (serviceId) => {
   return useQuery({
@@ -56,17 +55,3 @@ export const useDeleteSequence = () => {
   });
 };
 
-export const useUpdateTemplate = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ serviceId, stepNumber, channel, data }) =>
-      templatesApi.updateTemplate(serviceId, stepNumber, channel, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sequences'] });
-    },
-    onError: (err) => {
-      toast.error(err.response?.data?.message || 'Something went wrong');
-    },
-  });
-};

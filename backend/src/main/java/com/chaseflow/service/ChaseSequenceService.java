@@ -48,6 +48,8 @@ public class ChaseSequenceService {
                 .delayDays(request.getDelayDays() != null ? request.getDelayDays() : 0)
                 .isFinalStep(request.getIsFinalStep() != null ? request.getIsFinalStep() : false)
                 .stopOnReply(request.getStopOnReply() != null ? request.getStopOnReply() : true)
+                .useAiPersonalisation(request.getUseAiPersonalisation() != null ? request.getUseAiPersonalisation() : false)
+                .aiPersonalisationGuidance(request.getAiPersonalisationGuidance())
                 .deleted(false)
                 .build();
 
@@ -70,6 +72,8 @@ public class ChaseSequenceService {
         if (request.getDelayDays() != null) seq.setDelayDays(request.getDelayDays());
         if (request.getIsFinalStep() != null) seq.setIsFinalStep(request.getIsFinalStep());
         if (request.getStopOnReply() != null) seq.setStopOnReply(request.getStopOnReply());
+        if (request.getUseAiPersonalisation() != null) seq.setUseAiPersonalisation(request.getUseAiPersonalisation());
+        seq.setAiPersonalisationGuidance(request.getAiPersonalisationGuidance());
 
         seq = chaseSequenceRepository.save(seq);
         return toResponse(seq);
@@ -109,6 +113,8 @@ public class ChaseSequenceService {
                 .delayDays(seq.getDelayDays())
                 .isFinalStep(seq.getIsFinalStep())
                 .stopOnReply(seq.getStopOnReply())
+                .useAiPersonalisation(seq.getUseAiPersonalisation())
+                .aiPersonalisationGuidance(seq.getAiPersonalisationGuidance())
                 .templates(templateRepository.findByServiceIdAndStepNumber(serviceId, seq.getStepNumber()).stream()
                         .map(t -> TemplateResponse.builder()
                                 .id(t.getId())
@@ -120,13 +126,12 @@ public class ChaseSequenceService {
                                 .subject(t.getSubject())
                                 .templateContent(t.getTemplateContent())
                                 .templateContentFormat(t.getTemplateContentFormat().name())
-                                .aiPromptHint(t.getAiPromptHint())
-                                .useAi(t.getUseAi())
                                 .version(t.getVersion())
                                 .timeCreated(t.getTimeCreated())
                                 .timeUpdated(t.getTimeUpdated())
                                 .createdBy(t.getCreatedBy())
                                 .updatedBy(t.getUpdatedBy())
+                                .assigned(t.getStepNumber() != null)
                                 .build())
                         .toList())
                 .build();

@@ -7,6 +7,7 @@ const sizeStyles = {
   sm: 'max-w-md',
   md: 'max-w-lg',
   lg: 'max-w-2xl',
+  xl: 'max-w-5xl',
 };
 
 export function Modal({
@@ -92,7 +93,8 @@ export function Modal({
         className={clsx(
           'relative w-full mx-4 bg-white rounded-2xl shadow-modal',
           'animate-in fade-in zoom-in-95 duration-200',
-          'flex flex-col max-h-[85vh]',
+          'flex flex-col',
+          size === 'xl' ? 'max-h-[90vh]' : 'max-h-[85vh]',
           sizeStyles[size]
         )}
       >

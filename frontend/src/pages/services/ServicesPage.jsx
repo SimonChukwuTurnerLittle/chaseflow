@@ -27,7 +27,7 @@ import {
 } from '@/hooks/useServices';
 import CreateServiceModal from './modals/CreateServiceModal';
 import EditServiceModal from './modals/EditServiceModal';
-import ChaseSequenceModal from './modals/ChaseSequenceModal';
+import ServiceConfigModal from './modals/ServiceConfigModal';
 import CreateCategoryModal from './modals/CreateCategoryModal';
 import EditCategoryModal from './modals/EditCategoryModal';
 
@@ -429,7 +429,7 @@ export default function ServicesPage() {
       )}
 
       {sequenceService && (
-        <ChaseSequenceModal
+        <ServiceConfigModal
           open={!!sequenceService}
           onClose={() => setSequenceService(null)}
           service={sequenceService}

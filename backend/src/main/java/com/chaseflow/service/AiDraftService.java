@@ -115,13 +115,13 @@ public class AiDraftService {
     @Transactional
     public AiDraft generateDraft(Opportunity opportunity, Template template, TemplateType channel,
                                   List<Activity> activityHistory, ContactDetails contact,
-                                  String serviceName, int stepNumber) {
+                                  String serviceName, int stepNumber, String aiGuidance) {
         ClaudeApiClient.AiGeneratedContent generated = claudeApiClient.generateChaseMessage(
                 contact.getLead().getFirstName(),
                 serviceName,
                 opportunity.getTemperature().name(),
                 stepNumber,
-                template.getAiPromptHint(),
+                aiGuidance,
                 channel,
                 activityHistory
         );

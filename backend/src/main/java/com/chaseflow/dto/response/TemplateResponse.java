@@ -18,11 +18,10 @@ public class TemplateResponse {
     private String subject;
     private String templateContent;
     private String templateContentFormat;
-    private String aiPromptHint;
-    private Boolean useAi;
     private Integer version;
     private LocalDateTime timeCreated;
     private LocalDateTime timeUpdated;
     private String createdBy;
     private String updatedBy;
+    private Boolean assigned;
 }

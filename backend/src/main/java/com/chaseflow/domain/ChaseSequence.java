@@ -41,6 +41,13 @@ public class ChaseSequence extends BaseEntity {
     @Builder.Default
     private Boolean stopOnReply = true;
 
+    @Column(name = "use_ai_personalisation", nullable = false)
+    @Builder.Default
+    private Boolean useAiPersonalisation = false;
+
+    @Column(name = "ai_personalisation_guidance", columnDefinition = "TEXT")
+    private String aiPersonalisationGuidance;
+
     @Column(nullable = false)
     @Builder.Default
     private Boolean deleted = false;

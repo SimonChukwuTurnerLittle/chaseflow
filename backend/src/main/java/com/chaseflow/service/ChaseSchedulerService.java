@@ -96,10 +96,11 @@ public class ChaseSchedulerService {
         List<Activity> activityHistory = activityRepository
                 .findByOpportunityIdOrderByDateAddedDesc(opp.getId());
 
-        if (template.getUseAi()) {
+        if (seq.getUseAiPersonalisation()) {
             // Generate AI draft — will be reviewed by user
             AiDraft draft = aiDraftService.generateDraft(opp, template, template.getTemplateType(),
-                    activityHistory, contact, opp.getServiceName(), currentStep);
+                    activityHistory, contact, opp.getServiceName(), currentStep,
+                    seq.getAiPersonalisationGuidance());
             log.info("AI draft {} created for opportunity {}", draft.getId(), opp.getId());
 
             // Notify assigned user via email

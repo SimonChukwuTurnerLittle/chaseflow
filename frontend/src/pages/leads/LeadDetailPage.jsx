@@ -45,6 +45,7 @@ import * as leadsApi from '@/api/leadsApi';
 import { AddNoteModal } from './modals/AddNoteModal';
 import { EditLeadModal } from './modals/EditLeadModal';
 import { CreateOpportunityModal } from '@/pages/opportunities/modals/CreateOpportunityModal';
+import { OpportunityDetailModal } from '@/pages/opportunities/modals/OpportunityDetailModal';
 
 function formatBytes(bytes) {
   if (!bytes || bytes === 0) return '0 B';
@@ -86,6 +87,7 @@ export default function LeadDetailPage() {
   const [noteModalOpen, setNoteModalOpen] = useState(false);
   const [editLeadOpen, setEditLeadOpen] = useState(false);
   const [createOppOpen, setCreateOppOpen] = useState(false);
+  const [viewOppId, setViewOppId] = useState(null);
 
   const leadData = lead ?? {};
   const contact = leadData.contactDetails ?? {};
@@ -172,13 +174,13 @@ export default function LeadDetailPage() {
       key: 'actions',
       label: '',
       render: (_, row) => (
-        <Link
-          to={`/opportunities/${row.id}`}
-          className="p-1.5 rounded-md text-slate-400 hover:text-cta hover:bg-slate-100 transition-colors duration-200 inline-flex"
+        <button
+          onClick={() => setViewOppId(row.id)}
+          className="p-1.5 rounded-md text-slate-400 hover:text-cta hover:bg-slate-100 transition-colors duration-200 inline-flex cursor-pointer"
           aria-label="View opportunity"
         >
           <Eye size={16} />
-        </Link>
+        </button>
       ),
     },
   ];
@@ -547,6 +549,12 @@ export default function LeadDetailPage() {
           prefilledLeadId={id}
         />
       )}
+
+      <OpportunityDetailModal
+        opportunityId={viewOppId}
+        open={!!viewOppId}
+        onClose={() => setViewOppId(null)}
+      />
 
       <ConfirmDialog
         open={deleteLeadOpen}

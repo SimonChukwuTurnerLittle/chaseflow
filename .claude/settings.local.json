@@ -18,7 +18,16 @@
       "Bash(python .claude/skills/ui-ux-pro-max/scripts/search.py \"CRM SaaS dashboard admin professional\" --design-system -p \"ChaseFlow\")",
       "Bash(find 'c:/Users/Simon Chukwu/Documents/chaseflow/backend' -name *.log)",
       "Bash(python3 .claude/skills/ui-ux-pro-max/scripts/search.py \"CRM SaaS sales opportunity detail dashboard professional\" --design-system -p \"ChaseFlow CRM\")",
-      "Bash(python3 .claude/skills/ui-ux-pro-max/scripts/search.py \"CRM detail page dashboard clean professional data\" --domain ux)"
+      "Bash(python3 .claude/skills/ui-ux-pro-max/scripts/search.py \"CRM detail page dashboard clean professional data\" --domain ux)",
+      "Read(//c/Users/Simon Chukwu/.claude/plans/**)",
+      "Bash(node -e \"const l = require\\(''''lucide-react''''\\); console.log\\(''''LinkSlash:'''', !!l.LinkSlash\\); console.log\\(''''Link2Off:'''', !!l.Link2Off\\); console.log\\(''''Unlink:'''', !!l.Unlink\\); console.log\\(''''Unlink2:'''', !!l.Unlink2\\);\")",
+      "Bash(./mvnw compile:*)",
+      "Read(//c/Users/**)",
+      "Bash(where.exe mvn:*)",
+      "Bash(ls \"c:/Users/Simon Chukwu/Documents/chaseflow/backend/mvnw\"*)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\Simon Chukwu\\.claude\\plans"
     ]
   }
 }

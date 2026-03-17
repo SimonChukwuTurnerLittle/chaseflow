@@ -16,5 +16,7 @@ public class ChaseSequenceResponse {
     private Integer delayDays;
     private Boolean isFinalStep;
     private Boolean stopOnReply;
+    private Boolean useAiPersonalisation;
+    private String aiPersonalisationGuidance;
     private List<TemplateResponse> templates;
 }
