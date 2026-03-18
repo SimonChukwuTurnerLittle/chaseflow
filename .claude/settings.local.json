@@ -24,7 +24,9 @@
       "Bash(./mvnw compile:*)",
       "Read(//c/Users/**)",
       "Bash(where.exe mvn:*)",
-      "Bash(ls \"c:/Users/Simon Chukwu/Documents/chaseflow/backend/mvnw\"*)"
+      "Bash(ls \"c:/Users/Simon Chukwu/Documents/chaseflow/backend/mvnw\"*)",
+      "Bash(wc -l /c/Users/Simon Chukwu/Documents/chaseflow/frontend/src/pages/leads/modals/*.jsx /c/Users/Simon Chukwu/Documents/chaseflow/frontend/src/pages/opportunities/modals/*.jsx /c/Users/Simon Chukwu/Documents/chaseflow/frontend/src/components/shared/*.jsx /c/Users/Simon Chukwu/Documents/chaseflow/frontend/src/components/ui/*.jsx)",
+      "Bash(grep -r \"TODO\\\\|FIXME\\\\|XXX\\\\|HACK\\\\|placeholder\\\\|WIP\\\\|incomplete\" '/c/Users/Simon Chukwu/Documents/chaseflow/frontend/src' --include=*.js --include=*.jsx)"
     ],
     "additionalDirectories": [
       "c:\\Users\\Simon Chukwu\\.claude\\plans"
