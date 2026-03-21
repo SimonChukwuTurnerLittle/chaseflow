@@ -21,7 +21,7 @@ export default function ServiceConfigModal({ open, onClose, service }) {
       size="xl"
     >
       <div className="flex -mx-6 -my-4 min-h-[60vh]">
-        {/* Side navigation */}
+        {/* Side navigation — darker & bolder */}
         <nav className="w-74 shrink-0 border-r border-slate-300 bg-slate-50/50 py-4 px-2 rounded-bl-2xl">
           <div className="space-y-1">
             {TABS.map(({ key, label, icon: Icon }) => (
@@ -44,7 +44,7 @@ export default function ServiceConfigModal({ open, onClose, service }) {
         </nav>
 
         {/* Content area */}
-        <div className="flex-1 overflow-y-auto px-6 py-5">
+        <div className="flex-1 overflow-y-auto px-6 py-5 text-primary font-medium">
           {tab === 'templates' && <TemplatesTab service={service} />}
           {tab === 'sequences' && <SequencesTab service={service} />}
         </div>

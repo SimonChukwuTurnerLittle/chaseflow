@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -32,6 +34,7 @@ public class DashboardController {
     private final TenantContext tenantContext;
 
     @GetMapping
+    @Transactional(readOnly = true)
     public ResponseEntity<DashboardResponse> getDashboard() {
         UUID tenantId = tenantContext.currentTenantId();
 

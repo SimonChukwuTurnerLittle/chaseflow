@@ -1,9 +1,11 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { Search, FileText, X } from 'lucide-react';
+import { Search, FileText, X, Sparkles, Mail, MessageSquare, MessageCircle } from 'lucide-react';
 import { clsx } from 'clsx';
+import { motion } from 'framer-motion';
 
-import { PageHeader } from '@/components/shared/PageHeader';
+
+import { useSetPageHeader } from '@/contexts/PageHeaderContext';
 import { TemperatureBadge } from '@/components/shared/TemperatureBadge';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -16,16 +18,16 @@ import { useDrafts, useApproveDraft, useRejectDraft } from '@/hooks/useDrafts';
 import { DraftDrawer } from './DraftDrawer';
 
 const STATUS_TABS = [
-  { key: 'PENDING', label: 'Pending', color: 'bg-amber-500', activeBg: 'bg-amber-100 text-amber-700', hoverBg: 'hover:bg-amber-50' },
-  { key: 'APPROVED', label: 'Approved', color: 'bg-green-500', activeBg: 'bg-green-100 text-green-700', hoverBg: 'hover:bg-green-50' },
-  { key: 'REJECTED', label: 'Rejected', color: 'bg-red-500', activeBg: 'bg-red-100 text-red-700', hoverBg: 'hover:bg-red-50' },
-  { key: 'SENT', label: 'Sent', color: 'bg-gray-500', activeBg: 'bg-gray-100 text-gray-700', hoverBg: 'hover:bg-gray-50' },
+  { key: 'PENDING', label: 'Pending', icon: '⏳', activeBg: 'bg-amber-50 text-amber-700 border-amber-200', hoverBg: 'hover:bg-amber-50/50' },
+  { key: 'APPROVED', label: 'Approved', icon: '✓', activeBg: 'bg-emerald-50 text-emerald-700 border-emerald-200', hoverBg: 'hover:bg-emerald-50/50' },
+  { key: 'REJECTED', label: 'Rejected', icon: '✕', activeBg: 'bg-red-50 text-red-700 border-red-200', hoverBg: 'hover:bg-red-50/50' },
+  { key: 'SENT', label: 'Sent', icon: '→', activeBg: 'bg-slate-100 text-slate-700 border-slate-200', hoverBg: 'hover:bg-slate-50' },
 ];
 
-const CHANNEL_BADGE = {
-  EMAIL: { variant: 'info', label: 'Email' },
-  SMS: { variant: 'success', label: 'SMS' },
-  WHATSAPP: { variant: 'default', label: 'WhatsApp', className: 'bg-purple-100 text-purple-700' },
+const CHANNEL_CONFIG = {
+  EMAIL: { icon: Mail, color: 'text-blue-600', bg: 'bg-blue-50', borderColor: 'border-l-blue-500', label: 'Email' },
+  SMS: { icon: MessageSquare, color: 'text-green-600', bg: 'bg-green-50', borderColor: 'border-l-green-500', label: 'SMS' },
+  WHATSAPP: { icon: MessageCircle, color: 'text-purple-600', bg: 'bg-purple-50', borderColor: 'border-l-purple-500', label: 'WhatsApp' },
 };
 
 const EMPTY_MESSAGES = {
@@ -35,17 +37,37 @@ const EMPTY_MESSAGES = {
   SENT: 'No sent drafts',
 };
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.06 },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] } },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 8 },
+  visible: (i) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.04, duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] },
+  }),
+};
+
 export default function DraftsPage() {
-  // Filter state
   const [page, setPage] = useState(1);
   const [statusTab, setStatusTab] = useState('PENDING');
   const [channel, setChannel] = useState('');
   const [serviceFilter, setServiceFilter] = useState('');
   const [search, setSearch] = useState('');
 
-  // Drawer & confirm state
   const [selectedDraftId, setSelectedDraftId] = useState(null);
-  const [confirmAction, setConfirmAction] = useState(null); // { type: 'approve'|'reject', draftId }
+  const [confirmAction, setConfirmAction] = useState(null);
 
   const params = {
     page,
@@ -62,6 +84,16 @@ export default function DraftsPage() {
   const drafts = data?.data?.drafts ?? data?.data ?? [];
   const totalPages = data?.data?.totalPages ?? 1;
   const pendingCount = data?.data?.pendingCount ?? drafts.length;
+
+  const headerActions = useMemo(() => (
+    <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 rounded-xl border border-amber-200">
+      <Sparkles size={16} className="text-amber-500" />
+      <span className="text-sm font-semibold text-amber-700 tabular-nums">
+        {pendingCount} pending
+      </span>
+    </div>
+  ), [pendingCount]);
+  useSetPageHeader('AI Draft Queue', 'Review, approve, and manage AI-generated chase messages', headerActions);
 
   const handleTabChange = useCallback((tab) => {
     setStatusTab(tab);
@@ -82,45 +114,39 @@ export default function DraftsPage() {
     }
   };
 
-  const getChannelBadge = (channelType) => {
-    const config = CHANNEL_BADGE[channelType];
-    if (!config) return null;
-    return (
-      <Badge variant={config.variant} className={config.className}>
-        {config.label}
-      </Badge>
-    );
+  const getChannelConfig = (draft) => {
+    const ch = draft.channel || draft.templateType;
+    return CHANNEL_CONFIG[ch] || null;
   };
 
   return (
-    <>
-      <PageHeader title="AI Draft Queue">
-        <Badge variant="warning" className="text-sm px-3 py-1">
-          {pendingCount} pending
-        </Badge>
-      </PageHeader>
-
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
       {/* Status tabs */}
-      <div className="flex gap-2 mb-6">
+      <motion.div variants={itemVariants} className="flex gap-2 mb-6">
         {STATUS_TABS.map((tab) => (
           <button
             key={tab.key}
             onClick={() => handleTabChange(tab.key)}
             className={clsx(
-              'px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 cursor-pointer',
+              'px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer border',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta/50',
               statusTab === tab.key
                 ? tab.activeBg
-                : 'bg-white border border-slate-200 text-slate-600 ' + tab.hoverBg
+                : 'bg-white border-slate-200 text-slate-500 ' + tab.hoverBg
             )}
           >
+            <span className="mr-1.5">{tab.icon}</span>
             {tab.label}
           </button>
         ))}
-      </div>
+      </motion.div>
 
       {/* Filter bar */}
-      <div className="bg-white rounded-xl p-4 shadow-card mb-4">
+      <motion.div variants={itemVariants} className="bg-white rounded-2xl p-4 shadow-card mb-5">
         <div className="flex flex-wrap gap-3 items-end">
           {/* Search */}
           <div className="relative w-64">
@@ -137,9 +163,9 @@ export default function DraftsPage() {
                 setPage(1);
               }}
               className={clsx(
-                'w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm outline-none',
-                'transition-all duration-200',
-                'focus:ring-2 focus:ring-primary/20 focus:border-primary',
+                'w-full pl-9 pr-3 py-2.5 border border-slate-200 rounded-xl text-sm outline-none',
+                'transition-all duration-200 bg-slate-50/50',
+                'focus:ring-2 focus:ring-cta/20 focus:border-cta focus:bg-white',
                 'placeholder:text-slate-400'
               )}
             />
@@ -152,7 +178,7 @@ export default function DraftsPage() {
               setChannel(e.target.value);
               setPage(1);
             }}
-            className="px-3 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white cursor-pointer"
+            className="px-3 py-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-cta/20 focus:border-cta bg-slate-50/50 cursor-pointer transition-all duration-200"
           >
             <option value="">All Channels</option>
             <option value="EMAIL">Email</option>
@@ -167,10 +193,9 @@ export default function DraftsPage() {
               setServiceFilter(e.target.value);
               setPage(1);
             }}
-            className="px-3 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white cursor-pointer"
+            className="px-3 py-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-cta/20 focus:border-cta bg-slate-50/50 cursor-pointer transition-all duration-200"
           >
             <option value="">All Services</option>
-            {/* Services will be loaded dynamically when API is ready */}
           </select>
 
           {/* Clear */}
@@ -190,126 +215,150 @@ export default function DraftsPage() {
             </Button>
           )}
         </div>
-      </div>
+      </motion.div>
 
       {/* Draft cards */}
       {isLoading ? (
-        <div className="flex items-center justify-center py-24">
+        <div className="bg-white rounded-2xl shadow-card flex items-center justify-center py-24">
           <Spinner size="lg" />
         </div>
       ) : drafts.length === 0 ? (
-        <EmptyState
-          icon={FileText}
-          title={EMPTY_MESSAGES[statusTab]}
-          description={
-            statusTab === 'PENDING'
-              ? 'When the AI generates new chase drafts, they will appear here for review.'
-              : undefined
-          }
-        />
+        <motion.div variants={itemVariants} className="bg-white rounded-2xl shadow-card py-16">
+          <EmptyState
+            icon={FileText}
+            title={EMPTY_MESSAGES[statusTab]}
+            description={
+              statusTab === 'PENDING'
+                ? 'When the AI generates new chase drafts, they will appear here for review.'
+                : undefined
+            }
+          />
+        </motion.div>
       ) : (
         <>
           <div className="flex flex-col gap-3">
-            {drafts.map((draft) => (
-              <div
-                key={draft.id}
-                className="bg-white rounded-xl p-5 shadow-card flex justify-between items-start gap-4"
-              >
-                {/* Left side */}
-                <div className="flex-1 min-w-0">
-                  {/* Row 1: Lead name + service */}
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="font-semibold text-primary truncate">
-                      {draft.leadName || draft.lead?.name || 'Unknown Lead'}
-                    </span>
-                    <span className="text-sm text-secondary truncate">
-                      {draft.serviceName || draft.service?.name || ''}
-                    </span>
-                  </div>
+            {drafts.map((draft, i) => {
+              const channelCfg = getChannelConfig(draft);
+              const ChannelIcon = channelCfg?.icon;
 
-                  {/* Row 2: Badges */}
-                  <div className="flex items-center gap-2 flex-wrap mb-2">
-                    {draft.temperature && (
-                      <TemperatureBadge temperature={draft.temperature} />
-                    )}
-                    {draft.channel && getChannelBadge(draft.channel)}
-                    {(draft.templateType && !draft.channel) &&
-                      getChannelBadge(draft.templateType)}
-                  </div>
-
-                  {/* Subject / preview */}
-                  {(draft.templateType === 'EMAIL' || draft.channel === 'EMAIL') &&
-                    draft.subject && (
-                      <p className="text-sm text-secondary mt-1 truncate">
-                        Subject: {draft.subject}
-                      </p>
-                    )}
-                  {draft.content && (
-                    <p className="text-sm text-secondary mt-1 line-clamp-2">
-                      {draft.content.replace(/<[^>]*>/g, '').slice(0, 100)}
-                      {draft.content.replace(/<[^>]*>/g, '').length > 100
-                        ? '...'
-                        : ''}
-                    </p>
+              return (
+                <motion.div
+                  key={draft.id}
+                  custom={i}
+                  variants={cardVariants}
+                  initial="hidden"
+                  animate="visible"
+                  className={clsx(
+                    'bg-white rounded-2xl p-5 shadow-card border-l-4 transition-all duration-200 hover:shadow-card-hover',
+                    channelCfg?.borderColor || 'border-l-slate-300'
                   )}
+                >
+                  <div className="flex justify-between items-start gap-4">
+                    {/* Left side */}
+                    <div className="flex-1 min-w-0">
+                      {/* Row 1: Lead name + service */}
+                      <div className="flex items-center gap-3 mb-2.5">
+                        <span className="font-semibold text-primary text-[15px] truncate">
+                          {draft.leadName || draft.lead?.name || 'Unknown Lead'}
+                        </span>
+                        {(draft.serviceName || draft.service?.name) && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-xs font-medium text-slate-600 truncate">
+                            {draft.serviceName || draft.service?.name}
+                          </span>
+                        )}
+                      </div>
 
-                  {/* AI generated badge */}
-                  {draft.aiGenerated && (
-                    <Badge variant="warning" className="mt-2">
-                      AI Generated
-                    </Badge>
-                  )}
+                      {/* Row 2: Badges */}
+                      <div className="flex items-center gap-2 flex-wrap mb-2.5">
+                        {draft.temperature && (
+                          <TemperatureBadge temperature={draft.temperature} />
+                        )}
+                        {channelCfg && ChannelIcon && (
+                          <span className={clsx(
+                            'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium',
+                            channelCfg.bg, channelCfg.color
+                          )}>
+                            <ChannelIcon size={13} />
+                            {channelCfg.label}
+                          </span>
+                        )}
+                        {draft.aiGenerated && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-600 rounded-lg text-[11px] font-semibold uppercase tracking-wide">
+                            <Sparkles size={11} />
+                            AI Generated
+                          </span>
+                        )}
+                      </div>
 
-                  {/* Timestamp */}
-                  {draft.createdAt && (
-                    <p className="text-xs text-gray-400 mt-2">
-                      {formatDistanceToNow(new Date(draft.createdAt), {
-                        addSuffix: true,
-                      })}
-                    </p>
-                  )}
-                </div>
+                      {/* Subject / preview */}
+                      {(draft.templateType === 'EMAIL' || draft.channel === 'EMAIL') &&
+                        draft.subject && (
+                          <p className="text-sm text-slate-600 mt-1 truncate">
+                            <span className="font-medium text-slate-500">Subject:</span> {draft.subject}
+                          </p>
+                        )}
+                      {draft.content && (
+                        <p className="text-sm text-slate-500 mt-1.5 line-clamp-2 leading-relaxed">
+                          {draft.content.replace(/<[^>]*>/g, '').slice(0, 120)}
+                          {draft.content.replace(/<[^>]*>/g, '').length > 120 ? '...' : ''}
+                        </p>
+                      )}
 
-                {/* Right side: Actions */}
-                <div className="flex gap-2 shrink-0">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => setSelectedDraftId(draft.id)}
-                  >
-                    Review &amp; Edit
-                  </Button>
-                  {statusTab === 'PENDING' && (
-                    <>
+                      {/* Timestamp */}
+                      {draft.createdAt && (
+                        <p className="text-[11px] text-slate-400 mt-3">
+                          {formatDistanceToNow(new Date(draft.createdAt), {
+                            addSuffix: true,
+                          })}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Right side: Actions */}
+                    <div className="flex flex-col gap-2 shrink-0">
                       <Button
-                        variant="primary"
+                        variant="secondary"
                         size="sm"
-                        onClick={() =>
-                          setConfirmAction({
-                            type: 'approve',
-                            draftId: draft.id,
-                          })
-                        }
+                        onClick={() => setSelectedDraftId(draft.id)}
+                        className="text-xs"
                       >
-                        Approve
+                        Review & Edit
                       </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() =>
-                          setConfirmAction({
-                            type: 'reject',
-                            draftId: draft.id,
-                          })
-                        }
-                      >
-                        Reject
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </div>
-            ))}
+                      {statusTab === 'PENDING' && (
+                        <>
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() =>
+                              setConfirmAction({
+                                type: 'approve',
+                                draftId: draft.id,
+                              })
+                            }
+                            className="text-xs"
+                          >
+                            Approve
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() =>
+                              setConfirmAction({
+                                type: 'reject',
+                                draftId: draft.id,
+                              })
+                            }
+                            className="text-xs"
+                          >
+                            Reject
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
 
           {/* Pagination */}
@@ -353,6 +402,6 @@ export default function DraftsPage() {
         }
         loading={approveMutation.isPending || rejectMutation.isPending}
       />
-    </>
+    </motion.div>
   );
 }

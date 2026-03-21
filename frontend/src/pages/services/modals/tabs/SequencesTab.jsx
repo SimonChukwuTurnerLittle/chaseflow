@@ -65,7 +65,7 @@ function Toggle({ id, checked, onChange, label }) {
         <div className="w-8 h-[18px] bg-slate-200 rounded-full peer-checked:bg-cta transition-colors duration-200" />
         <div className="absolute top-[2px] left-[2px] w-[14px] h-[14px] bg-white rounded-full shadow-sm transition-transform duration-200 peer-checked:translate-x-3.5" />
       </div>
-      <span className="text-sm text-slate-600 group-hover:text-primary transition-colors">
+      <span className="text-sm font-medium text-slate-700 group-hover:text-primary transition-colors">
         {label}
       </span>
     </label>
@@ -171,10 +171,10 @@ function TemplateAssociation({ sequence, service, allTemplates }) {
         ) : (
           <ChevronRight size={14} className="text-slate-400 group-hover:text-slate-600 transition-colors" />
         )}
-        <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider group-hover:text-slate-700 transition-colors">
+        <span className="text-xs font-bold text-slate-600 uppercase tracking-wider group-hover:text-slate-800 transition-colors">
           Templates
         </span>
-        <span className="text-xs text-slate-400">
+        <span className="text-xs font-medium text-slate-500">
           {assignedCount}/{CHANNELS.length} assigned
         </span>
       </button>
@@ -278,7 +278,7 @@ function StepCard({ sequence, service, allTemplates, onDelete }) {
           <Badge variant="default">Step {sequence.stepNumber}</Badge>
 
           <div className="flex items-center gap-1.5">
-            <span className="text-xs text-slate-500">after</span>
+            <span className="text-xs font-medium text-slate-600">after</span>
             <input
               type="number"
               min="0"
@@ -287,7 +287,7 @@ function StepCard({ sequence, service, allTemplates, onDelete }) {
               onBlur={() => autoSave('delayDays', delayDays)}
               className="w-14 px-2 py-1 border border-slate-200 rounded-md text-sm text-center focus:ring-2 focus:ring-cta/20 focus:border-cta outline-none transition-all duration-150"
             />
-            <span className="text-xs text-slate-500">days</span>
+            <span className="text-xs font-medium text-slate-600">days</span>
           </div>
 
           <TemplateStatusDots templates={sequence.templates} />
@@ -342,7 +342,7 @@ function StepCard({ sequence, service, allTemplates, onDelete }) {
           <div className="mt-3 ml-10 animate-in fade-in slide-in-from-top-1 duration-150">
             <label
               htmlFor={`ai-guidance-${sequence.id}`}
-              className="block text-xs font-medium text-slate-500 mb-1.5"
+              className="block text-xs font-semibold text-slate-600 mb-1.5"
             >
               Guidance for AI
             </label>
@@ -414,7 +414,7 @@ export default function SequencesTab({ service }) {
     <div>
       {/* Header — matches TemplatesTab layout */}
       <div className="flex items-center justify-between gap-3 mb-4">
-        <h3 className="text-base font-semibold text-primary">Chase Sequences</h3>
+        <h3 className="text-base font-bold text-primary">Chase Sequences</h3>
         <Button size="sm" onClick={handleAddStep} loading={createSequence.isPending}>
           <Plus size={14} />
           Add Step
@@ -444,8 +444,8 @@ export default function SequencesTab({ service }) {
         ))}
       </div>
 
-      <p className="text-xs text-slate-400 mb-4 mt-1.5">
-        Temperature controls <span className="font-medium text-slate-500">timing only</span> — templates are shared across all tracks.
+      <p className="text-xs font-medium text-slate-500 mb-4 mt-1.5">
+        Temperature controls <span className="font-semibold text-slate-600">timing only</span> — templates are shared across all tracks.
       </p>
 
       {/* Step list */}
@@ -454,7 +454,7 @@ export default function SequencesTab({ service }) {
           <Spinner size="md" />
         </div>
       ) : filteredSteps.length === 0 ? (
-        <div className="text-center py-12 text-sm text-slate-400">
+        <div className="text-center py-12 text-sm text-slate-500">
           {sequences.length === 0 ? (
             <>
               No steps yet.{' '}
@@ -492,8 +492,8 @@ export default function SequencesTab({ service }) {
           disabled={createSequence.isPending}
           className={clsx(
             'w-full mt-3 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl',
-            'border border-dashed border-slate-200 text-xs font-medium text-slate-400',
-            'hover:border-slate-300 hover:text-slate-500 transition-all duration-200 cursor-pointer',
+            'border border-dashed border-slate-300 text-xs font-medium text-slate-500',
+            'hover:border-slate-400 hover:text-slate-700 transition-all duration-200 cursor-pointer',
             createSequence.isPending && 'opacity-50 pointer-events-none'
           )}
         >

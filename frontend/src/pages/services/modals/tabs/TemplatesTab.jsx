@@ -81,11 +81,11 @@ function TemplateCard({ template, serviceId, onEdit }) {
             {badge.label}
           </Badge>
           <div className="min-w-0">
-            <p className="text-sm font-medium text-primary truncate">
+            <p className="text-sm font-semibold text-primary truncate">
               {template.templateTitle || 'Untitled template'}
             </p>
             {template.templateDescription && (
-              <p className="text-xs text-slate-400 truncate mt-0.5">{template.templateDescription}</p>
+              <p className="text-xs text-slate-500 truncate mt-0.5">{template.templateDescription}</p>
             )}
           </div>
         </div>
@@ -205,13 +205,13 @@ function TemplateEditor({ template, serviceId, onBack, isNew }) {
       <button
         type="button"
         onClick={onBack}
-        className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-primary mb-4 cursor-pointer transition-colors duration-150"
+        className="flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-primary mb-4 cursor-pointer transition-colors duration-150"
       >
         <ArrowLeft size={14} />
         Back to templates
       </button>
 
-      <h3 className="text-base font-semibold text-primary mb-4">
+      <h3 className="text-base font-bold text-primary mb-4">
         {isNew ? 'Create Template' : 'Edit Template'}
       </h3>
 
@@ -229,7 +229,7 @@ function TemplateEditor({ template, serviceId, onBack, isNew }) {
 
         {!isNew && (
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-slate-500">Type:</span>
+            <span className="text-sm font-semibold text-slate-700">Type:</span>
             <Badge variant={CHANNEL_BADGE[templateType]?.variant} className={CHANNEL_BADGE[templateType]?.className}>
               {CHANNEL_BADGE[templateType]?.label || templateType}
             </Badge>
@@ -329,7 +329,7 @@ function TemplateEditor({ template, serviceId, onBack, isNew }) {
 
         {/* Available Tokens */}
         <div className="bg-white rounded-lg border border-slate-200 p-3">
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+          <p className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
             Available Tokens — click to copy
           </p>
           <div className="flex flex-wrap gap-1.5">
@@ -395,7 +395,7 @@ export default function TemplatesTab({ service }) {
     <div>
       {/* Header */}
       <div className="flex items-center justify-between gap-3 mb-4">
-        <h3 className="text-base font-semibold text-primary">Templates</h3>
+        <h3 className="text-base font-bold text-primary">Templates</h3>
         <Button size="sm" onClick={() => setEditTarget('new')}>
           <Plus size={14} />
           Create Template
@@ -426,7 +426,7 @@ export default function TemplatesTab({ service }) {
 
       {/* Template list */}
       {filtered.length === 0 ? (
-        <div className="text-center py-12 text-sm text-slate-400">
+        <div className="text-center py-12 text-sm text-slate-500">
           {templates.length === 0 ? (
             <>
               No templates yet.{' '}

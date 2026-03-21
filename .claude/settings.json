@@ -1,5 +1,10 @@
 {
   "enabledPlugins": {
     "ui-ux-pro-max@ui-ux-pro-max-skill": true
+  },
+  "permissions": {
+    "allow": [
+      "Bash(mysql -u root -e \"CREATE DATABASE IF NOT EXISTS chaseflow_crm;\")"
+    ]
   }
 }

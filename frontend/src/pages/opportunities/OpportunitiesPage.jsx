@@ -1,10 +1,13 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { format } from 'date-fns';
-import { Plus, Search, Eye, Trash2, Target, X } from 'lucide-react';
+import { Plus, Search, Eye, Trash2, Target, X, Filter } from 'lucide-react';
 import { clsx } from 'clsx';
+import { motion } from 'framer-motion';
 
+import { useSetPageHeader } from '@/contexts/PageHeaderContext';
 import { TemperatureBadge } from '@/components/shared/TemperatureBadge';
 import { StatusBadge } from '@/components/shared/StatusBadge';
+
 import { Table } from '@/components/ui/Table';
 import { Button } from '@/components/ui/Button';
 import { Pagination } from '@/components/ui/Pagination';
@@ -31,8 +34,20 @@ const TEMPERATURE_OPTIONS = [
   { value: 'DORMANT', label: 'Dormant' },
 ];
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.06 },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] } },
+};
+
 export default function OpportunitiesPage() {
-  // Filter state
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
@@ -41,12 +56,18 @@ export default function OpportunitiesPage() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
 
-  // Modal state
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [viewTargetId, setViewTargetId] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  // Build query params (Spring Pageable is 0-indexed)
+  const headerActions = useMemo(() => (
+    <Button onClick={() => setCreateModalOpen(true)}>
+      <Plus size={16} />
+      New Opportunity
+    </Button>
+  ), []);
+  useSetPageHeader('Opportunities', 'Track and manage your sales opportunities', headerActions);
+
   const params = {
     page: page - 1,
     size: 20,
@@ -63,6 +84,7 @@ export default function OpportunitiesPage() {
 
   const opportunities = data?.content ?? [];
   const totalPages = data?.totalPages ?? 1;
+  const totalElements = data?.size ?? 0;
 
   const hasFilters = search || status || temperature || service || dateFrom || dateTo;
 
@@ -101,8 +123,10 @@ export default function OpportunitiesPage() {
     },
     {
       key: 'serviceName',
-      label: 'Service Name',
-      render: (value, row) => value || row.service?.name || '-',
+      label: 'Service',
+      render: (value, row) => (
+        <span className="text-slate-600">{value || row.service?.name || '-'}</span>
+      ),
     },
     {
       key: 'temperature',
@@ -117,62 +141,99 @@ export default function OpportunitiesPage() {
     {
       key: 'stage',
       label: 'Stage',
-      render: (value) => value || '-',
+      render: (value) => (
+        <span className={clsx(
+          'inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium',
+          value ? 'bg-slate-100 text-slate-700' : 'text-slate-400'
+        )}>
+          {value || '-'}
+        </span>
+      ),
     },
     {
       key: 'nextChaseDate',
-      label: 'Next Chase Date',
-      render: (value) =>
-        value ? format(new Date(value), 'MMM d, yyyy') : '-',
+      label: 'Next Chase',
+      render: (value) => (
+        <span className="text-slate-500 text-sm tabular-nums">
+          {value ? format(new Date(value), 'MMM d, yyyy') : '-'}
+        </span>
+      ),
     },
     {
       key: 'currentStep',
-      label: 'Current Step',
-      render: (value) => value ?? '-',
+      label: 'Step',
+      render: (value) => (
+        <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 text-xs font-semibold text-slate-600">
+          {value ?? '-'}
+        </span>
+      ),
     },
     {
       key: 'handler',
       label: 'Handler',
-      render: (value, row) => value || row.handler?.name || '-',
+      render: (value, row) => (
+        <span className="text-slate-600">{value || row.handler?.name || '-'}</span>
+      ),
     },
     {
       key: 'actions',
-      label: 'Actions',
+      label: '',
       render: (_value, row) => (
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
+        <div className="flex items-center gap-0.5">
+          <button
             onClick={() => setViewTargetId(row.id)}
-            title="View Opportunity"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-cta bg-cta/5 rounded-lg hover:bg-cta/10 cursor-pointer transition-colors duration-150"
+            title="View"
           >
-            <Eye size={16} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
+            <Eye size={13} />
+            View
+          </button>
+          <button
             onClick={() => setDeleteTarget(row)}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 cursor-pointer transition-colors duration-150"
             title="Delete"
           >
-            <Trash2 size={16} className="text-red-500" />
-          </Button>
+            <Trash2 size={15} />
+          </button>
         </div>
       ),
     },
   ];
 
   return (
-    <>
-      {/* Actions */}
-      <div className="flex justify-end mb-6">
-        <Button onClick={() => setCreateModalOpen(true)}>
-          <Plus size={16} />
-          New Opportunity
-        </Button>
-      </div>
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      {/* Stats strip */}
+      <motion.div variants={itemVariants} className="mb-6">
+        <div className="flex items-center gap-3">
+          <div className="bg-white rounded-2xl px-5 py-3 shadow-card flex items-center gap-3">
+            <div className="w-9 h-9 flex items-center justify-center rounded-xl bg-emerald-500/10">
+              <Target size={18} className="text-emerald-600" />
+            </div>
+            <div>
+              <p className="text-xs font-medium text-slate-500">Total Opportunities</p>
+              <p className="text-lg font-bold text-primary tabular-nums">{totalElements}</p>
+            </div>
+          </div>
+          {hasFilters && (
+            <div className="bg-white rounded-2xl px-5 py-3 shadow-card flex items-center gap-3">
+              <div className="w-9 h-9 flex items-center justify-center rounded-xl bg-amber-500/10">
+                <Filter size={18} className="text-amber-600" />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-slate-500">Filtered Results</p>
+                <p className="text-lg font-bold text-primary tabular-nums">{opportunities.length}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </motion.div>
 
       {/* Filter bar */}
-      <div className="bg-white rounded-xl p-4 shadow-card mb-6">
+      <motion.div variants={itemVariants} className="bg-white rounded-2xl p-4 shadow-card mb-6">
         <div className="flex flex-wrap gap-3 items-end">
           {/* Search */}
           <div className="relative w-64">
@@ -189,9 +250,9 @@ export default function OpportunitiesPage() {
                 setPage(1);
               }}
               className={clsx(
-                'w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm outline-none',
-                'transition-all duration-200',
-                'focus:ring-2 focus:ring-primary/20 focus:border-primary',
+                'w-full pl-9 pr-3 py-2.5 border border-slate-200 rounded-xl text-sm outline-none',
+                'transition-all duration-200 bg-slate-50/50',
+                'focus:ring-2 focus:ring-cta/20 focus:border-cta focus:bg-white',
                 'placeholder:text-slate-400'
               )}
             />
@@ -204,7 +265,7 @@ export default function OpportunitiesPage() {
               setStatus(e.target.value);
               setPage(1);
             }}
-            className="px-3 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white cursor-pointer"
+            className="px-3 py-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-cta/20 focus:border-cta bg-slate-50/50 cursor-pointer transition-all duration-200"
           >
             {STATUS_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -220,7 +281,7 @@ export default function OpportunitiesPage() {
               setTemperature(e.target.value);
               setPage(1);
             }}
-            className="px-3 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white cursor-pointer"
+            className="px-3 py-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-cta/20 focus:border-cta bg-slate-50/50 cursor-pointer transition-all duration-200"
           >
             {TEMPERATURE_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -236,32 +297,38 @@ export default function OpportunitiesPage() {
               setService(e.target.value);
               setPage(1);
             }}
-            className="px-3 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white cursor-pointer"
+            className="px-3 py-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-cta/20 focus:border-cta bg-slate-50/50 cursor-pointer transition-all duration-200"
           >
             <option value="">All Services</option>
           </select>
 
           {/* Date From */}
-          <input
-            type="date"
-            value={dateFrom}
-            onChange={(e) => {
-              setDateFrom(e.target.value);
-              setPage(1);
-            }}
-            className="px-3 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-          />
+          <div className="flex flex-col gap-1">
+            <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">From</span>
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => {
+                setDateFrom(e.target.value);
+                setPage(1);
+              }}
+              className="px-3 py-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-cta/20 focus:border-cta bg-slate-50/50 transition-all duration-200"
+            />
+          </div>
 
           {/* Date To */}
-          <input
-            type="date"
-            value={dateTo}
-            onChange={(e) => {
-              setDateTo(e.target.value);
-              setPage(1);
-            }}
-            className="px-3 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-          />
+          <div className="flex flex-col gap-1">
+            <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">To</span>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => {
+                setDateTo(e.target.value);
+                setPage(1);
+              }}
+              className="px-3 py-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-cta/20 focus:border-cta bg-slate-50/50 transition-all duration-200"
+            />
+          </div>
 
           {/* Clear Filters */}
           {hasFilters && (
@@ -271,44 +338,47 @@ export default function OpportunitiesPage() {
             </Button>
           )}
         </div>
-      </div>
+      </motion.div>
 
       {/* Table */}
-      {isLoading ? (
-        <div className="flex items-center justify-center py-24">
-          <Spinner size="lg" />
-        </div>
-      ) : opportunities.length === 0 && !hasFilters ? (
-        <EmptyState
-          icon={Target}
-          title="No opportunities yet"
-          description="Create your first opportunity to start tracking your sales pipeline."
-          action={
-            <Button onClick={() => setCreateModalOpen(true)}>
-              <Plus size={16} />
-              New Opportunity
-            </Button>
-          }
-        />
-      ) : (
-        <>
-          <Table
-            columns={columns}
-            data={opportunities}
-            loading={isLoading}
-            emptyMessage="No opportunities match your filters"
-          />
-
-          {/* Pagination */}
-          <div className="flex justify-center mt-6">
-            <Pagination
-              page={page}
-              totalPages={totalPages}
-              onPageChange={setPage}
+      <motion.div variants={itemVariants}>
+        {isLoading ? (
+          <div className="bg-white rounded-2xl shadow-card flex items-center justify-center py-24">
+            <Spinner size="lg" />
+          </div>
+        ) : opportunities.length === 0 && !hasFilters ? (
+          <div className="bg-white rounded-2xl shadow-card py-16">
+            <EmptyState
+              icon={Target}
+              title="No opportunities yet"
+              description="Create your first opportunity to start tracking your sales pipeline."
+              action={
+                <Button onClick={() => setCreateModalOpen(true)}>
+                  <Plus size={16} />
+                  New Opportunity
+                </Button>
+              }
             />
           </div>
-        </>
-      )}
+        ) : (
+          <>
+            <Table
+              columns={columns}
+              data={opportunities}
+              loading={isLoading}
+              emptyMessage="No opportunities match your filters"
+            />
+
+            <div className="flex justify-center mt-6">
+              <Pagination
+                page={page}
+                totalPages={totalPages}
+                onPageChange={setPage}
+              />
+            </div>
+          </>
+        )}
+      </motion.div>
 
       {/* Create Opportunity Modal */}
       <CreateOpportunityModal
@@ -336,6 +406,6 @@ export default function OpportunitiesPage() {
         variant="destructive"
         loading={deleteMutation.isPending}
       />
-    </>
+    </motion.div>
   );
 }

@@ -1,8 +1,9 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, X, Pencil, Trash2, UserPlus, Search } from 'lucide-react';
+import { Plus, X, Pencil, Trash2, UserPlus, Search, Users, Filter } from 'lucide-react';
 import { format } from 'date-fns';
 import { clsx } from 'clsx';
+import { motion } from 'framer-motion';
 
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -11,7 +12,8 @@ import { Table } from '@/components/ui/Table';
 import { Pagination } from '@/components/ui/Pagination';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { PageHeader } from '@/components/shared/PageHeader';
+
+import { useSetPageHeader } from '@/contexts/PageHeaderContext';
 import { TemperatureBadge } from '@/components/shared/TemperatureBadge';
 import { useLeads, useDeleteLead } from '@/hooks/useLeads';
 import { CreateLeadModal } from './modals/CreateLeadModal';
@@ -32,6 +34,18 @@ const RATING_OPTIONS = [
   { value: 'DORMANT', label: 'Dormant' },
 ];
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.06 },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] } },
+};
 
 export default function LeadsPage() {
   const [page, setPage] = useState(1);
@@ -42,6 +56,14 @@ export default function LeadsPage() {
   const [dateTo, setDateTo] = useState('');
   const [createOpen, setCreateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+
+  const headerActions = useMemo(() => (
+    <Button onClick={() => setCreateOpen(true)}>
+      <Plus size={16} />
+      Add Lead
+    </Button>
+  ), []);
+  useSetPageHeader('Leads', 'Manage and track your leads pipeline', headerActions);
 
   const deleteLead = useDeleteLead();
 
@@ -59,6 +81,7 @@ export default function LeadsPage() {
 
   const leads = data?.content ?? [];
   const totalPages = data?.totalPages ?? 1;
+  const totalElements = data?.size ?? 0;
 
   const hasFilters = search || source || rating || dateFrom || dateTo;
 
@@ -94,17 +117,28 @@ export default function LeadsPage() {
     {
       key: 'email',
       label: 'Email',
-      render: (_, row) => row.contactDetails?.email || '—',
+      render: (_, row) => (
+        <span className="text-slate-600">{row.contactDetails?.email || '—'}</span>
+      ),
     },
     {
       key: 'phone',
       label: 'Phone',
-      render: (_, row) => row.contactDetails?.phone || '—',
+      render: (_, row) => (
+        <span className="text-slate-600">{row.contactDetails?.phone || '—'}</span>
+      ),
     },
     {
       key: 'source',
       label: 'Source',
-      render: (val) => val || '—',
+      render: (val) => (
+        <span className={clsx(
+          'inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium',
+          val ? 'bg-slate-100 text-slate-700' : 'text-slate-400'
+        )}>
+          {val || '—'}
+        </span>
+      ),
     },
     {
       key: 'rating',
@@ -114,30 +148,33 @@ export default function LeadsPage() {
     {
       key: 'handler',
       label: 'Handler',
-      render: (val) => val || '—',
+      render: (val) => <span className="text-slate-600">{val || '—'}</span>,
     },
     {
       key: 'dateCreated',
       label: 'Date Created',
-      render: (val) =>
-        val ? format(new Date(val), 'MMM d, yyyy') : '—',
+      render: (val) => (
+        <span className="text-slate-500 text-sm tabular-nums">
+          {val ? format(new Date(val), 'MMM d, yyyy') : '—'}
+        </span>
+      ),
     },
     {
       key: 'actions',
       label: '',
       render: (_, row) => (
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5">
           <Link
             to={`/leads/${row.id}`}
-            className="p-1.5 rounded-md text-slate-400 hover:text-cta hover:bg-slate-100 transition-colors duration-200"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-cta hover:bg-blue-50 transition-colors duration-150"
           >
-            <Pencil size={16} />
+            <Pencil size={15} />
           </Link>
           <button
             onClick={() => setDeleteTarget(row)}
-            className="p-1.5 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors duration-200 cursor-pointer"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors duration-150 cursor-pointer"
           >
-            <Trash2 size={16} />
+            <Trash2 size={15} />
           </button>
         </div>
       ),
@@ -145,16 +182,39 @@ export default function LeadsPage() {
   ];
 
   return (
-    <>
-      <PageHeader title="Leads">
-        <Button onClick={() => setCreateOpen(true)}>
-          <Plus size={16} />
-          Add Lead
-        </Button>
-      </PageHeader>
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      {/* Stats strip */}
+      <motion.div variants={itemVariants} className="mb-6">
+        <div className="flex items-center gap-3">
+          <div className="bg-white rounded-2xl px-5 py-3 shadow-card flex items-center gap-3">
+            <div className="w-9 h-9 flex items-center justify-center rounded-xl bg-blue-500/10">
+              <Users size={18} className="text-blue-600" />
+            </div>
+            <div>
+              <p className="text-xs font-medium text-slate-500">Total Leads</p>
+              <p className="text-lg font-bold text-primary tabular-nums">{totalElements}</p>
+            </div>
+          </div>
+          {hasFilters && (
+            <div className="bg-white rounded-2xl px-5 py-3 shadow-card flex items-center gap-3">
+              <div className="w-9 h-9 flex items-center justify-center rounded-xl bg-amber-500/10">
+                <Filter size={18} className="text-amber-600" />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-slate-500">Filtered Results</p>
+                <p className="text-lg font-bold text-primary tabular-nums">{leads.length}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </motion.div>
 
       {/* Filter bar */}
-      <div className="bg-white rounded-xl p-4 shadow-card mb-6">
+      <motion.div variants={itemVariants} className="bg-white rounded-2xl p-4 shadow-card mb-6">
         <div className="flex flex-wrap gap-3 items-end">
           {/* Search */}
           <div className="relative w-64">
@@ -171,9 +231,9 @@ export default function LeadsPage() {
                 setPage(1);
               }}
               className={clsx(
-                'w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm outline-none',
-                'transition-all duration-200',
-                'focus:ring-2 focus:ring-primary/20 focus:border-primary',
+                'w-full pl-9 pr-3 py-2.5 border border-slate-200 rounded-xl text-sm outline-none',
+                'transition-all duration-200 bg-slate-50/50',
+                'focus:ring-2 focus:ring-cta/20 focus:border-cta focus:bg-white',
                 'placeholder:text-slate-400'
               )}
             />
@@ -186,7 +246,7 @@ export default function LeadsPage() {
               setSource(e.target.value);
               setPage(1);
             }}
-            className="px-3 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white cursor-pointer"
+            className="px-3 py-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-cta/20 focus:border-cta bg-slate-50/50 cursor-pointer transition-all duration-200"
           >
             <option value="">All Sources</option>
             {SOURCE_OPTIONS.map((opt) => (
@@ -203,7 +263,7 @@ export default function LeadsPage() {
               setRating(e.target.value);
               setPage(1);
             }}
-            className="px-3 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white cursor-pointer"
+            className="px-3 py-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-cta/20 focus:border-cta bg-slate-50/50 cursor-pointer transition-all duration-200"
           >
             {RATING_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -213,26 +273,32 @@ export default function LeadsPage() {
           </select>
 
           {/* Date From */}
-          <input
-            type="date"
-            value={dateFrom}
-            onChange={(e) => {
-              setDateFrom(e.target.value);
-              setPage(1);
-            }}
-            className="px-3 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-          />
+          <div className="flex flex-col gap-1">
+            <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">From</span>
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => {
+                setDateFrom(e.target.value);
+                setPage(1);
+              }}
+              className="px-3 py-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-cta/20 focus:border-cta bg-slate-50/50 transition-all duration-200"
+            />
+          </div>
 
           {/* Date To */}
-          <input
-            type="date"
-            value={dateTo}
-            onChange={(e) => {
-              setDateTo(e.target.value);
-              setPage(1);
-            }}
-            className="px-3 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-          />
+          <div className="flex flex-col gap-1">
+            <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">To</span>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => {
+                setDateTo(e.target.value);
+                setPage(1);
+              }}
+              className="px-3 py-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-cta/20 focus:border-cta bg-slate-50/50 transition-all duration-200"
+            />
+          </div>
 
           {/* Clear Filters */}
           {hasFilters && (
@@ -242,39 +308,43 @@ export default function LeadsPage() {
             </Button>
           )}
         </div>
-      </div>
+      </motion.div>
 
       {/* Table or empty state */}
-      {!isLoading && leads.length === 0 && !hasFilters ? (
-        <EmptyState
-          icon={UserPlus}
-          title="No leads yet"
-          description="Add your first lead to get started"
-          action={
-            <Button onClick={() => setCreateOpen(true)}>
-              <Plus size={16} />
-              Add Lead
-            </Button>
-          }
-        />
-      ) : (
-        <>
-          <Table
-            columns={columns}
-            data={leads}
-            loading={isLoading}
-            emptyMessage="No leads match your filters"
-          />
-
-          <div className="mt-4 flex justify-center">
-            <Pagination
-              page={page}
-              totalPages={totalPages}
-              onPageChange={setPage}
+      <motion.div variants={itemVariants}>
+        {!isLoading && leads.length === 0 && !hasFilters ? (
+          <div className="bg-white rounded-2xl shadow-card py-16">
+            <EmptyState
+              icon={UserPlus}
+              title="No leads yet"
+              description="Add your first lead to get started tracking your pipeline"
+              action={
+                <Button onClick={() => setCreateOpen(true)}>
+                  <Plus size={16} />
+                  Add Lead
+                </Button>
+              }
             />
           </div>
-        </>
-      )}
+        ) : (
+          <>
+            <Table
+              columns={columns}
+              data={leads}
+              loading={isLoading}
+              emptyMessage="No leads match your filters"
+            />
+
+            <div className="mt-4 flex justify-center">
+              <Pagination
+                page={page}
+                totalPages={totalPages}
+                onPageChange={setPage}
+              />
+            </div>
+          </>
+        )}
+      </motion.div>
 
       {/* Create Lead Modal */}
       {createOpen && (
@@ -294,6 +364,6 @@ export default function LeadsPage() {
         confirmText="Delete"
         loading={deleteLead.isPending}
       />
-    </>
+    </motion.div>
   );
 }

@@ -2,6 +2,7 @@ import { Bell, ChevronRight } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import useAuthStore from '../../store/authStore';
+import { usePageHeader } from '../../contexts/PageHeaderContext';
 
 const SECTIONS = {
   dashboard:    { label: 'Dashboard',    path: '/dashboard' },
@@ -12,22 +13,22 @@ const SECTIONS = {
   settings:     { label: 'Settings',     path: '/settings' },
 };
 
+function useIsDetailPage() {
+  const { pathname } = useLocation();
+  const segments = pathname.split('/').filter(Boolean);
+  return segments.length > 1;
+}
+
 function useBreadcrumbs() {
   const { pathname } = useLocation();
   const queryClient = useQueryClient();
 
   const segments = pathname.split('/').filter(Boolean);
-  if (!segments.length) return [];
+  if (segments.length <= 1) return [];
 
   const section = SECTIONS[segments[0]];
   if (!section) return [];
 
-  // Top-level page
-  if (segments.length === 1) {
-    return [{ label: section.label, path: null }];
-  }
-
-  // Detail page — try to resolve entity name from cache
   const id = segments[1];
   let detailLabel = null;
 
@@ -51,6 +52,8 @@ function useBreadcrumbs() {
 
 export function TopBar() {
   const user = useAuthStore((s) => s.user);
+  const header = usePageHeader();
+  const isDetail = useIsDetailPage();
   const crumbs = useBreadcrumbs();
 
   const initials = (user?.name || 'U')
@@ -62,40 +65,50 @@ export function TopBar() {
 
   return (
     <header className="fixed top-0 left-60 right-0 h-16 bg-white border-b border-slate-200 z-30 flex items-center justify-between px-6">
-      {/* Breadcrumb */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5">
-        {crumbs.map((crumb, i) => {
-          const isLast = i === crumbs.length - 1;
-          return (
-            <span key={i} className="flex items-center gap-1.5">
-              {i > 0 && (
-                <ChevronRight size={14} className="text-slate-400 flex-shrink-0" />
-              )}
-              {crumb.path && !isLast ? (
-                <Link
-                  to={crumb.path}
-                  className="text-sm font-medium text-slate-500 hover:text-cta transition-colors cursor-pointer"
-                >
-                  {crumb.label}
-                </Link>
-              ) : (
-                <span
-                  className={
-                    isLast && crumbs.length > 1
-                      ? 'text-sm font-semibold text-primary'
-                      : 'text-lg font-semibold text-primary'
-                  }
-                >
-                  {crumb.label}
-                </span>
-              )}
-            </span>
-          );
-        })}
-      </nav>
+      {/* Left side */}
+      {isDetail ? (
+        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5">
+          {crumbs.map((crumb, i) => {
+            const isLast = i === crumbs.length - 1;
+            return (
+              <span key={i} className="flex items-center gap-1.5">
+                {i > 0 && (
+                  <ChevronRight size={14} className="text-slate-400 flex-shrink-0" />
+                )}
+                {crumb.path && !isLast ? (
+                  <Link
+                    to={crumb.path}
+                    className="text-sm font-medium text-slate-500 hover:text-cta transition-colors cursor-pointer"
+                  >
+                    {crumb.label}
+                  </Link>
+                ) : (
+                  <span className="text-sm font-semibold text-primary">
+                    {crumb.label}
+                  </span>
+                )}
+              </span>
+            );
+          })}
+        </nav>
+      ) : (
+        <div>
+          {header?.title && (
+            <h1 className="text-lg font-bold text-primary leading-tight">{header.title}</h1>
+          )}
+          {header?.subtitle && (
+            <p className="text-xs text-secondary">{header.subtitle}</p>
+          )}
+        </div>
+      )}
 
-      {/* Right actions */}
+      {/* Right side */}
       <div className="flex items-center gap-4">
+        {/* Page actions */}
+        {!isDetail && header?.actions && (
+          <div className="flex items-center gap-3">{header.actions}</div>
+        )}
+
         {/* Notification bell */}
         <button
           className="relative p-2 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
