@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Pagination } from '@/components/ui/Pagination';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ErrorState } from '@/components/ui/ErrorState';
 import { Spinner } from '@/components/ui/Spinner';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
@@ -77,7 +78,7 @@ export default function DraftsPage() {
     ...(serviceFilter && { service: serviceFilter }),
   };
 
-  const { data, isLoading } = useDrafts(params);
+  const { data, isLoading, isError, refetch } = useDrafts(params);
   const approveMutation = useApproveDraft();
   const rejectMutation = useRejectDraft();
 
@@ -218,7 +219,11 @@ export default function DraftsPage() {
       </motion.div>
 
       {/* Draft cards */}
-      {isLoading ? (
+      {isError && drafts.length === 0 ? (
+        <div className="bg-white rounded-2xl shadow-card py-16">
+          <ErrorState title="Unable to load drafts" onRetry={refetch} />
+        </div>
+      ) : isLoading ? (
         <div className="bg-white rounded-2xl shadow-card flex items-center justify-center py-24">
           <Spinner size="lg" />
         </div>

@@ -13,6 +13,7 @@ import {
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Spinner } from '@/components/ui/Spinner';
+import { ErrorState } from '@/components/ui/ErrorState';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { toast } from '@/components/ui/Toast';
 import {
@@ -366,8 +367,8 @@ function StepCard({ sequence, service, allTemplates, onDelete }) {
 /*  Main: SequencesTab                                                 */
 /* ------------------------------------------------------------------ */
 export default function SequencesTab({ service }) {
-  const { data: sequencesRes, isLoading: seqLoading } = useSequences(service?.id);
-  const { data: templatesRes, isLoading: tplLoading } = useTemplates(service?.id);
+  const { data: sequencesRes, isLoading: seqLoading, isError: seqError, refetch: refetchSeq } = useSequences(service?.id);
+  const { data: templatesRes, isLoading: tplLoading, isError: tplError, refetch: refetchTpl } = useTemplates(service?.id);
   const createSequence = useCreateSequence();
   const deleteSequence = useDeleteSequence();
 
@@ -449,7 +450,9 @@ export default function SequencesTab({ service }) {
       </p>
 
       {/* Step list */}
-      {isLoading ? (
+      {(seqError || tplError) && sequences.length === 0 ? (
+        <ErrorState title="Unable to load sequences" onRetry={() => { refetchSeq(); refetchTpl(); }} />
+      ) : isLoading ? (
         <div className="flex items-center justify-center py-16">
           <Spinner size="md" />
         </div>

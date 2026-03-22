@@ -17,6 +17,7 @@ import { Select } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
 import { Badge } from '@/components/ui/Badge';
 import { Spinner } from '@/components/ui/Spinner';
+import { ErrorState } from '@/components/ui/ErrorState';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { toast } from '@/components/ui/Toast';
 import {
@@ -360,7 +361,7 @@ function TemplateEditor({ template, serviceId, onBack, isNew }) {
 }
 
 export default function TemplatesTab({ service }) {
-  const { data: templatesRes, isLoading } = useTemplates(service?.id);
+  const { data: templatesRes, isLoading, isError, refetch } = useTemplates(service?.id);
   const [typeFilter, setTypeFilter] = useState('ALL');
   const [editTarget, setEditTarget] = useState(null); // template object or 'new'
 
@@ -389,6 +390,10 @@ export default function TemplatesTab({ service }) {
         <Spinner size="md" />
       </div>
     );
+  }
+
+  if (isError && templates.length === 0) {
+    return <ErrorState title="Unable to load templates" onRetry={refetch} />;
   }
 
   return (

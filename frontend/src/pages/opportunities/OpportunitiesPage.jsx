@@ -12,6 +12,7 @@ import { Table } from '@/components/ui/Table';
 import { Button } from '@/components/ui/Button';
 import { Pagination } from '@/components/ui/Pagination';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ErrorState } from '@/components/ui/ErrorState';
 import { Spinner } from '@/components/ui/Spinner';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
@@ -79,7 +80,7 @@ export default function OpportunitiesPage() {
     ...(dateTo && { dateTo }),
   };
 
-  const { data, isLoading } = useOpportunities(params);
+  const { data, isLoading, isError, refetch } = useOpportunities(params);
   const deleteMutation = useDeleteOpportunity();
 
   const opportunities = data?.content ?? [];
@@ -342,7 +343,11 @@ export default function OpportunitiesPage() {
 
       {/* Table */}
       <motion.div variants={itemVariants}>
-        {isLoading ? (
+        {isError && opportunities.length === 0 ? (
+          <div className="bg-white rounded-2xl shadow-card py-16">
+            <ErrorState title="Unable to load opportunities" onRetry={refetch} />
+          </div>
+        ) : isLoading ? (
           <div className="bg-white rounded-2xl shadow-card flex items-center justify-center py-24">
             <Spinner size="lg" />
           </div>

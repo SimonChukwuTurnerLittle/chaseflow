@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Spinner } from '@/components/ui/Spinner';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ErrorState } from '@/components/ui/ErrorState';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { toast } from '@/components/ui/Toast';
 import {
@@ -357,8 +358,8 @@ function ServicesSkeleton() {
 }
 
 export default function ServicesPage() {
-  const { data: servicesRes, isLoading: servicesLoading } = useServices();
-  const { data: categoriesRes, isLoading: categoriesLoading } = useCategories();
+  const { data: servicesRes, isLoading: servicesLoading, isError: servicesError, refetch: refetchServices } = useServices();
+  const { data: categoriesRes, isLoading: categoriesLoading, isError: categoriesError, refetch: refetchCategories } = useCategories();
   const deleteService = useDeleteService();
   const deleteCategory = useDeleteCategory();
 
@@ -470,6 +471,15 @@ export default function ServicesPage() {
   const isLoading = servicesLoading || categoriesLoading;
 
   if (isLoading) return <ServicesSkeleton />;
+
+  if ((servicesError || categoriesError) && services.length === 0 && categories.length === 0) {
+    return (
+      <ErrorState
+        title="Unable to load services"
+        onRetry={() => { refetchServices(); refetchCategories(); }}
+      />
+    );
+  }
 
   return (
     <>

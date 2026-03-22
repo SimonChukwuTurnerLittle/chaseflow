@@ -23,6 +23,7 @@ import { useSetPageHeader } from '@/contexts/PageHeaderContext';
 import { TemperatureBadge } from '@/components/shared/TemperatureBadge';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { ErrorState } from '@/components/ui/ErrorState';
 
 const statCards = [
   {
@@ -267,12 +268,16 @@ function DashboardSkeleton() {
 export default function DashboardPage() {
   useSetPageHeader('Dashboard', 'Overview of your sales pipeline');
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['dashboard'],
     queryFn: () => getDashboard().then((res) => res.data),
   });
 
   if (isLoading) return <DashboardSkeleton />;
+
+  if (isError && !data) {
+    return <ErrorState title="Unable to load dashboard" onRetry={refetch} />;
+  }
 
   const dashboard = data || {};
   const chases = dashboard.chasesdue || [];

@@ -11,6 +11,7 @@ import { Select } from '@/components/ui/Select';
 import { Table } from '@/components/ui/Table';
 import { Pagination } from '@/components/ui/Pagination';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ErrorState } from '@/components/ui/ErrorState';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
 import { useSetPageHeader } from '@/contexts/PageHeaderContext';
@@ -77,7 +78,7 @@ export default function LeadsPage() {
     ...(dateTo && { dateTo }),
   };
 
-  const { data, isLoading } = useLeads(params);
+  const { data, isLoading, isError, refetch } = useLeads(params);
 
   const leads = data?.content ?? [];
   const totalPages = data?.totalPages ?? 1;
@@ -312,7 +313,11 @@ export default function LeadsPage() {
 
       {/* Table or empty state */}
       <motion.div variants={itemVariants}>
-        {!isLoading && leads.length === 0 && !hasFilters ? (
+        {isError && leads.length === 0 ? (
+          <div className="bg-white rounded-2xl shadow-card py-16">
+            <ErrorState title="Unable to load leads" onRetry={refetch} />
+          </div>
+        ) : !isLoading && leads.length === 0 && !hasFilters ? (
           <div className="bg-white rounded-2xl shadow-card py-16">
             <EmptyState
               icon={UserPlus}

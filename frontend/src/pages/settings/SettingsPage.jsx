@@ -18,6 +18,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { Table } from '@/components/ui/Table';
 import { Spinner } from '@/components/ui/Spinner';
+import { ErrorState } from '@/components/ui/ErrorState';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { toast } from '@/components/ui/Toast';
 
@@ -111,7 +112,7 @@ function SectionCard({ icon: Icon, iconColor, iconBg, title, description, childr
 
 function AccountTab() {
   const queryClient = useQueryClient();
-  const { data: accountRes, isLoading } = useQuery({
+  const { data: accountRes, isLoading, isError, refetch } = useQuery({
     queryKey: ['settings', 'account'],
     queryFn: () => settingsApi.getAccount().then((r) => r.data),
   });
@@ -148,6 +149,10 @@ function AccountTab() {
         <Spinner size="md" />
       </div>
     );
+  }
+
+  if (isError && !accountRes) {
+    return <ErrorState title="Unable to load account settings" onRetry={refetch} />;
   }
 
   return (
@@ -211,7 +216,7 @@ function AccountTab() {
 
 function UsersTab() {
   const queryClient = useQueryClient();
-  const { data: usersRes, isLoading } = useQuery({
+  const { data: usersRes, isLoading, isError, refetch } = useQuery({
     queryKey: ['settings', 'users'],
     queryFn: () => settingsApi.getUsers().then((r) => r.data),
   });
@@ -333,6 +338,10 @@ function UsersTab() {
       ),
     },
   ];
+
+  if (isError && !usersRes) {
+    return <ErrorState title="Unable to load users" onRetry={refetch} />;
+  }
 
   return (
     <motion.div variants={itemVariants}>
