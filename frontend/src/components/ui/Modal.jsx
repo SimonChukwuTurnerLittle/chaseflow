@@ -91,10 +91,11 @@ export function Modal({
         role="dialog"
         aria-modal="true"
         className={clsx(
-          'relative w-full mx-4 bg-white rounded-2xl shadow-modal',
+          'relative w-full mx-2 sm:mx-4 bg-white shadow-modal',
           'animate-in fade-in zoom-in-95 duration-200',
           'flex flex-col',
-          size === 'xl' ? 'max-h-[90vh]' : 'max-h-[85vh]',
+          'rounded-2xl max-h-[90vh] sm:max-h-[85vh]',
+          size === 'xl' ? 'sm:max-h-[90vh]' : '',
           sizeStyles[size]
         )}
       >

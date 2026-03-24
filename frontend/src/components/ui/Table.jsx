@@ -24,8 +24,8 @@ export function Table({
   emptyMessage = 'No data found',
 }) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-slate-200">
-      <table className="w-full text-sm">
+    <div className="overflow-x-auto rounded-xl border border-slate-200 max-w-full">
+      <table className="w-full text-sm min-w-[600px]">
         <thead>
           <tr className="border-b border-slate-200 bg-slate-50">
             {columns.map((col) => (

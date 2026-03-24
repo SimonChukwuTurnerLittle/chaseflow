@@ -19,17 +19,23 @@ public class TenantInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+        
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+      
         if (authentication != null && authentication.isAuthenticated()
                 && !"anonymousUser".equals(authentication.getPrincipal())) {
+
             String email = authentication.getName();
+
             userAccountRepository.findByEmail(email).ifPresent(user -> {
                 tenantContext.setTenantId(user.getTenantId());
                 tenantContext.setUserId(user.getId());
                 tenantContext.setUserRole(user.getUserRole());
                 tenantContext.setUsername(user.getUsername());
             });
+            
         }
+
         return true;
     }
 

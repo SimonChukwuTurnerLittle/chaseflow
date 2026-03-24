@@ -66,8 +66,8 @@ function StatCard({ icon: Icon, label, value, accent = 'text-cta', sub }) {
 function DetailRow({ label, value }) {
   if (!value) return null;
   return (
-    <div className="flex items-start gap-3 py-3 border-b border-slate-100 last:border-0">
-      <span className="w-36 shrink-0 text-xs font-medium text-slate-400 uppercase tracking-wide pt-0.5">
+    <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-3 border-b border-slate-100 last:border-0">
+      <span className="sm:w-36 shrink-0 text-xs font-medium text-slate-400 uppercase tracking-wide pt-0.5">
         {label}
       </span>
       <span className="text-sm text-primary font-medium">{value}</span>
@@ -177,7 +177,7 @@ export default function OpportunityDetailPage() {
         <div className={clsx('h-1 rounded-t-lg mb-0', accent.bar)} />
 
         {/* ── Header ───────────────────────────────────────────────────── */}
-        <div className="flex items-start justify-between gap-4 mb-6 pt-5">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6 pt-5">
           {/* Left: back + title */}
           <div className="flex items-start gap-3 min-w-0">
             <button
@@ -235,7 +235,7 @@ export default function OpportunityDetailPage() {
         </div>
 
         {/* ── Stat strip ───────────────────────────────────────────────── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+        <div className="grid grid-cols-2 gap-3 mb-6">
           <StatCard
             icon={Layers}
             label="Current Step"

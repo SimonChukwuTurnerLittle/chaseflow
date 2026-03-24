@@ -196,16 +196,16 @@ export default function LeadDetailPage() {
   return (
     <>
       {/* ── Lead Header Card ── */}
-      <div className="bg-white rounded-2xl shadow-card p-6 mb-6">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-4">
+      <div className="bg-white rounded-2xl shadow-card p-4 sm:p-6 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             {/* Avatar */}
-            <div className="w-14 h-14 rounded-full bg-cta/10 text-cta flex items-center justify-center text-lg font-bold shrink-0">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-cta/10 text-cta flex items-center justify-center text-base sm:text-lg font-bold shrink-0">
               {initials}
             </div>
-            <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-bold text-primary">{fullName}</h1>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                <h1 className="text-xl sm:text-2xl font-bold text-primary">{fullName}</h1>
                 {leadData.source && (
                   <Badge variant="info">{leadData.source}</Badge>
                 )}
@@ -248,8 +248,8 @@ export default function LeadDetailPage() {
         </div>
 
         {/* ── Contact Details Inline ── */}
-        <div className="mt-5 pt-5 border-t border-slate-100">
-          <div className="flex flex-wrap gap-x-8 gap-y-3">
+        <div className="mt-4 sm:mt-5 pt-4 sm:pt-5 border-t border-slate-100">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap gap-x-8 gap-y-3">
             {contact.email && (
               <ContactItem icon={Mail} label="Email" value={contact.email} />
             )}
@@ -279,12 +279,12 @@ export default function LeadDetailPage() {
       </div>
 
       {/* ── Two-column layout ── */}
-      <div className="grid lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* ── Left column: Tabbed content ── */}
         <div className="lg:col-span-3">
           {/* Tab bar */}
           <div className="bg-white rounded-xl shadow-card">
-            <div className="flex border-b border-slate-200">
+            <div className="flex overflow-x-auto border-b border-slate-200">
               {TABS.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.key;
@@ -300,7 +300,7 @@ export default function LeadDetailPage() {
                     key={tab.key}
                     onClick={() => setActiveTab(tab.key)}
                     className={clsx(
-                      'flex items-center gap-2 px-5 py-3.5 text-sm font-medium transition-colors duration-200 border-b-2 -mb-px cursor-pointer',
+                      'flex items-center gap-2 px-3 sm:px-5 py-3 sm:py-3.5 text-sm font-medium transition-colors duration-200 border-b-2 -mb-px cursor-pointer whitespace-nowrap',
                       isActive
                         ? 'border-cta text-cta'
                         : 'border-transparent text-secondary hover:text-primary hover:border-slate-300'
@@ -477,7 +477,7 @@ export default function LeadDetailPage() {
                               </div>
                             </div>
                           </div>
-                          <div className="flex items-center gap-1 ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                          <div className="flex items-center gap-1 ml-4 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
                             <button
                               onClick={() => handleDownloadFile(file)}
                               className="p-1.5 rounded-md text-slate-400 hover:text-cta hover:bg-white transition-colors duration-200 cursor-pointer"

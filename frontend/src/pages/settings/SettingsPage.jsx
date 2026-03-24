@@ -352,7 +352,7 @@ function UsersTab() {
         title="Team Members"
         description="Manage your team and their roles"
       >
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             {planLimit != null && (
               <p className="text-sm text-slate-500">
@@ -598,7 +598,7 @@ export default function SettingsPage() {
     >
       {/* Tab bar */}
       <motion.div variants={itemVariants} className="mb-6">
-        <div className="flex gap-1 bg-slate-100 rounded-lg p-1 w-fit">
+        <div className="flex gap-1 bg-slate-100 rounded-lg p-1 w-full sm:w-fit overflow-x-auto">
           {visibleTabs.map((tab) => {
             const Icon = tab.icon;
             return (
@@ -607,7 +607,7 @@ export default function SettingsPage() {
                 type="button"
                 onClick={() => setActiveTab(tab.key)}
                 className={clsx(
-                  'flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 cursor-pointer',
+                  'flex items-center gap-2 px-3 sm:px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 cursor-pointer whitespace-nowrap flex-1 sm:flex-none justify-center sm:justify-start',
                   activeTab === tab.key
                     ? 'bg-white shadow-sm text-primary'
                     : 'text-slate-500 hover:text-slate-700'

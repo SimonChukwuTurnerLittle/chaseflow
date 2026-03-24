@@ -189,8 +189,8 @@ export default function LeadsPage() {
       animate="visible"
     >
       {/* Stats strip */}
-      <motion.div variants={itemVariants} className="mb-6">
-        <div className="flex items-center gap-3">
+      <motion.div variants={itemVariants} className="mb-4 sm:mb-6">
+        <div className="flex items-center gap-3 overflow-x-auto">
           <div className="bg-white rounded-2xl px-5 py-3 shadow-card flex items-center gap-3">
             <div className="w-9 h-9 flex items-center justify-center rounded-xl bg-blue-500/10">
               <Users size={18} className="text-blue-600" />
@@ -214,11 +214,19 @@ export default function LeadsPage() {
         </div>
       </motion.div>
 
+      {/* Mobile action button (visible on small screens where header actions are hidden) */}
+      <div className="sm:hidden mb-4">
+        <Button onClick={() => setCreateOpen(true)} className="w-full">
+          <Plus size={16} />
+          Add Lead
+        </Button>
+      </div>
+
       {/* Filter bar */}
-      <motion.div variants={itemVariants} className="bg-white rounded-2xl p-4 shadow-card mb-6">
-        <div className="flex flex-wrap gap-3 items-end">
+      <motion.div variants={itemVariants} className="bg-white rounded-2xl p-3 sm:p-4 shadow-card mb-6">
+        <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:items-end">
           {/* Search */}
-          <div className="relative w-64">
+          <div className="relative w-full sm:w-64">
             <Search
               size={16}
               className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
@@ -240,65 +248,69 @@ export default function LeadsPage() {
             />
           </div>
 
-          {/* Source */}
-          <select
-            value={source}
-            onChange={(e) => {
-              setSource(e.target.value);
-              setPage(1);
-            }}
-            className="px-3 py-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-cta/20 focus:border-cta bg-slate-50/50 cursor-pointer transition-all duration-200"
-          >
-            <option value="">All Sources</option>
-            {SOURCE_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-
-          {/* Rating */}
-          <select
-            value={rating}
-            onChange={(e) => {
-              setRating(e.target.value);
-              setPage(1);
-            }}
-            className="px-3 py-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-cta/20 focus:border-cta bg-slate-50/50 cursor-pointer transition-all duration-200"
-          >
-            {RATING_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-
-          {/* Date From */}
-          <div className="flex flex-col gap-1">
-            <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">From</span>
-            <input
-              type="date"
-              value={dateFrom}
+          {/* Filters row */}
+          <div className="flex gap-2 overflow-x-auto sm:overflow-visible sm:flex-wrap sm:gap-3">
+            {/* Source */}
+            <select
+              value={source}
               onChange={(e) => {
-                setDateFrom(e.target.value);
+                setSource(e.target.value);
                 setPage(1);
               }}
-              className="px-3 py-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-cta/20 focus:border-cta bg-slate-50/50 transition-all duration-200"
-            />
+              className="px-3 py-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-cta/20 focus:border-cta bg-slate-50/50 cursor-pointer transition-all duration-200 min-w-[120px]"
+            >
+              <option value="">All Sources</option>
+              {SOURCE_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+
+            {/* Rating */}
+            <select
+              value={rating}
+              onChange={(e) => {
+                setRating(e.target.value);
+                setPage(1);
+              }}
+              className="px-3 py-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-cta/20 focus:border-cta bg-slate-50/50 cursor-pointer transition-all duration-200 min-w-[120px]"
+            >
+              {RATING_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
           </div>
 
-          {/* Date To */}
-          <div className="flex flex-col gap-1">
-            <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">To</span>
-            <input
-              type="date"
-              value={dateTo}
-              onChange={(e) => {
-                setDateTo(e.target.value);
-                setPage(1);
-              }}
-              className="px-3 py-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-cta/20 focus:border-cta bg-slate-50/50 transition-all duration-200"
-            />
+          {/* Date filters */}
+          <div className="flex gap-2 sm:gap-3">
+            <div className="flex flex-col gap-1 flex-1 sm:flex-none">
+              <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">From</span>
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => {
+                  setDateFrom(e.target.value);
+                  setPage(1);
+                }}
+                className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-cta/20 focus:border-cta bg-slate-50/50 transition-all duration-200"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1 flex-1 sm:flex-none">
+              <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">To</span>
+              <input
+                type="date"
+                value={dateTo}
+                onChange={(e) => {
+                  setDateTo(e.target.value);
+                  setPage(1);
+                }}
+                className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-cta/20 focus:border-cta bg-slate-50/50 transition-all duration-200"
+              />
+            </div>
           </div>
 
           {/* Clear Filters */}

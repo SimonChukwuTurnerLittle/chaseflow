@@ -186,13 +186,13 @@ export function OpportunityDetailModal({ opportunityId, open, onClose }) {
         ref={panelRef}
         role="dialog"
         aria-modal="true"
-        className="relative w-full mx-4 max-w-5xl bg-white rounded-2xl shadow-modal flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200 overflow-hidden"
+        className="relative w-full mx-2 sm:mx-4 max-w-5xl bg-white rounded-2xl shadow-modal flex flex-col max-h-[95vh] sm:max-h-[90vh] animate-in fade-in zoom-in-95 duration-200 overflow-hidden"
       >
         {/* Temperature accent bar */}
         <div className={clsx('h-1 shrink-0', accent.bar)} />
 
         {/* Header */}
-        <div className="flex items-start justify-between gap-4 px-6 py-4 border-b border-slate-200 shrink-0">
+        <div className="flex items-start justify-between gap-2 sm:gap-4 px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-200 shrink-0">
           <div className="min-w-0">
             {isLoading || !opp ? (
               <div className="h-6 w-48 bg-slate-100 rounded animate-pulse" />
@@ -251,7 +251,7 @@ export function OpportunityDetailModal({ opportunityId, open, onClose }) {
         </div>
 
         {/* Scrollable body */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
           {isLoading ? (
             <div className="flex items-center justify-center py-24">
               <Spinner size="lg" />

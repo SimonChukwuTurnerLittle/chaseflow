@@ -153,7 +153,7 @@ function ServiceRow({ svc, onEdit, onConfig, onDelete }) {
         )}
       </td>
       <td className="px-5 py-3.5">
-        <div className="flex items-center justify-end gap-0.5 opacity-60 group-hover:opacity-100 transition-opacity duration-200">
+        <div className="flex items-center justify-end gap-0.5 sm:opacity-60 sm:group-hover:opacity-100 transition-opacity duration-200">
           <Tooltip.Provider delayDuration={300}>
             <Tooltip.Root>
               <Tooltip.Trigger asChild>
@@ -298,9 +298,9 @@ function CategoryGroup({
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="overflow-x-auto border-t border-slate-100"
+                  className="overflow-x-auto border-t border-slate-100 max-w-full"
                 >
-                  <table className="w-full text-sm">
+                  <table className="w-full text-sm min-w-[600px]">
                     <thead>
                       <tr className="bg-slate-50/60">
                         {['Service', 'Mode', 'Price', 'Temperature', 'Re-chase', ''].map((h) => (
@@ -483,6 +483,18 @@ export default function ServicesPage() {
 
   return (
     <>
+      {/* Mobile action buttons */}
+      <div className="sm:hidden flex gap-2 mb-4">
+        <Button variant="secondary" onClick={() => setCreateCategoryOpen(true)} className="flex-1">
+          <FolderPlus size={16} />
+          Category
+        </Button>
+        <Button onClick={() => setCreateOpen(true)} className="flex-1">
+          <Plus size={16} />
+          Service
+        </Button>
+      </div>
+
       {/* Content */}
 
       {services.length === 0 && categories.length === 0 ? (

@@ -39,7 +39,7 @@ export function Drawer({ open, onClose, title, wide = false, children }) {
           'ml-auto relative h-full bg-white shadow-modal flex flex-col',
           'transition-transform duration-300 ease-in-out',
           open ? 'translate-x-0' : 'translate-x-full',
-          wide ? 'w-[600px] max-w-full' : 'w-[420px] max-w-full'
+          wide ? 'w-full sm:w-[600px] sm:max-w-full' : 'w-full sm:w-[420px] sm:max-w-full'
         )}
       >
         {/* Header */}

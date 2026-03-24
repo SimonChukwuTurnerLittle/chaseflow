@@ -127,13 +127,13 @@ export default function DraftsPage() {
       animate="visible"
     >
       {/* Status tabs */}
-      <motion.div variants={itemVariants} className="flex gap-2 mb-6">
+      <motion.div variants={itemVariants} className="flex gap-2 mb-6 overflow-x-auto pb-1 -mx-4 px-4 lg:mx-0 lg:px-0">
         {STATUS_TABS.map((tab) => (
           <button
             key={tab.key}
             onClick={() => handleTabChange(tab.key)}
             className={clsx(
-              'px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer border',
+              'px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer border whitespace-nowrap',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta/50',
               statusTab === tab.key
                 ? tab.activeBg
@@ -147,10 +147,10 @@ export default function DraftsPage() {
       </motion.div>
 
       {/* Filter bar */}
-      <motion.div variants={itemVariants} className="bg-white rounded-2xl p-4 shadow-card mb-5">
-        <div className="flex flex-wrap gap-3 items-end">
+      <motion.div variants={itemVariants} className="bg-white rounded-2xl p-3 sm:p-4 shadow-card mb-5">
+        <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:items-end">
           {/* Search */}
-          <div className="relative w-64">
+          <div className="relative w-full sm:w-64">
             <Search
               size={16}
               className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
@@ -258,7 +258,7 @@ export default function DraftsPage() {
                     channelCfg?.borderColor || 'border-l-slate-300'
                   )}
                 >
-                  <div className="flex justify-between items-start gap-4">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-4">
                     {/* Left side */}
                     <div className="flex-1 min-w-0">
                       {/* Row 1: Lead name + service */}
@@ -320,7 +320,7 @@ export default function DraftsPage() {
                     </div>
 
                     {/* Right side: Actions */}
-                    <div className="flex flex-col gap-2 shrink-0">
+                    <div className="flex sm:flex-col gap-2 shrink-0">
                       <Button
                         variant="secondary"
                         size="sm"

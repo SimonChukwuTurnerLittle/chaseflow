@@ -1,4 +1,5 @@
-import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Zap,
   LayoutDashboard,
@@ -8,27 +9,47 @@ import {
   Briefcase,
   Settings,
   LogOut,
+  X,
 } from 'lucide-react';
+import { clsx } from 'clsx';
 import useAuthStore from '../../store/authStore';
+import useUiStore from '../../store/uiStore';
 import { SidebarLink } from './SidebarLink';
 import { RoleBadge } from '../shared/RoleBadge';
 
 export function Sidebar() {
   const { user, logout, isHandler } = useAuthStore();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const { mobileSidebarOpen, closeMobileSidebar } = useUiStore();
+
+  // Close mobile sidebar on route change
+  useEffect(() => {
+    closeMobileSidebar();
+  }, [pathname, closeMobileSidebar]);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
-  return (
-    <aside className="fixed left-0 top-0 w-60 h-screen bg-primary text-white flex flex-col z-40">
+  const sidebarContent = (
+    <>
       {/* Logo & tenant */}
       <div className="px-4 py-5">
-        <div className="flex items-center gap-2">
-          <Zap size={22} className="text-cta" />
-          <span className="text-lg font-bold tracking-tight">Chaseflow</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Zap size={22} className="text-cta" />
+            <span className="text-lg font-bold tracking-tight">Chaseflow</span>
+          </div>
+          {/* Close button - mobile only */}
+          <button
+            onClick={closeMobileSidebar}
+            className="lg:hidden p-1.5 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            aria-label="Close menu"
+          >
+            <X size={20} />
+          </button>
         </div>
         <p className="text-xs text-white/50 mt-1 pl-[30px]">
           {user?.tenantName || 'Workspace'}
@@ -66,6 +87,35 @@ export function Sidebar() {
           <span>Logout</span>
         </button>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop sidebar - always visible on lg+ */}
+      <aside className="hidden lg:flex fixed left-0 top-0 w-60 h-screen bg-primary text-white flex-col z-40">
+        {sidebarContent}
+      </aside>
+
+      {/* Mobile sidebar - overlay drawer */}
+      {mobileSidebarOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 flex">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={closeMobileSidebar}
+          />
+          {/* Panel */}
+          <aside
+            className={clsx(
+              'relative w-72 max-w-[85vw] h-full bg-primary text-white flex flex-col',
+              'animate-slide-in-left'
+            )}
+          >
+            {sidebarContent}
+          </aside>
+        </div>
+      )}
+    </>
   );
 }

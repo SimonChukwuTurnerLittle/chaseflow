@@ -300,7 +300,7 @@ export default function DashboardPage() {
       </motion.div>
 
       {/* Main content grid */}
-      <div className="mt-8 grid grid-cols-1 lg:grid-cols-5 gap-6">
+      <div className="mt-6 lg:mt-8 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-6">
         {/* Chases due today — wider column */}
         <motion.section variants={itemVariants} className="lg:col-span-3">
           <div className="bg-white rounded-2xl shadow-card overflow-hidden">
@@ -331,8 +331,8 @@ export default function DashboardPage() {
                 <p className="text-xs text-slate-400 mt-1">No chases are due today.</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+              <div className="overflow-x-auto max-w-full">
+                <table className="w-full text-sm min-w-[600px]">
                   <thead>
                     <tr className="bg-slate-50/70">
                       <th className="px-5 py-2.5 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Lead</th>
