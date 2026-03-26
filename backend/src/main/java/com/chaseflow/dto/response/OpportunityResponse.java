@@ -15,18 +15,17 @@ public class OpportunityResponse {
     private String leadName;
     private UUID serviceId;
     private String serviceName;
-    private LocalDateTime dateAdded;
-    private String status;
-    private String category;
-    private String chaseTechnique;
-    private String chaseMethod;
+    private String channel;
+    private String temperature;
+    private Integer currentStep;
+    private LocalDate nextChaseDate;
+    private String aiGuidanceContext;
     private String stage;
     private LocalDate stageDate;
-    private LocalDate nextChaseDate;
-    private Integer currentStep;
-    private String temperature;
     private String opportunityType;
+    private String status;
     private String notes;
     private String handler;
+    private LocalDateTime dateAdded;
     private LocalDateTime dateCompleted;
 }

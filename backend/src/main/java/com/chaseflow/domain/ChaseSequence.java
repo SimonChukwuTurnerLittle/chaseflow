@@ -1,14 +1,12 @@
 package com.chaseflow.domain;
 
-import com.chaseflow.domain.enums.Temperature;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLRestriction;
 
-
 @Entity
 @Table(name = "chase_sequence", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"service_id", "temperature", "step_number"})
+        @UniqueConstraint(columnNames = {"service_channel_id", "step_number"})
 })
 @SQLRestriction("deleted = false")
 @Getter
@@ -19,19 +17,11 @@ import org.hibernate.annotations.SQLRestriction;
 public class ChaseSequence extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "service_id", nullable = false)
-    private Service service;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Temperature temperature;
+    @JoinColumn(name = "service_channel_id", nullable = false)
+    private ServiceChannel serviceChannel;
 
     @Column(name = "step_number", nullable = false)
     private Integer stepNumber;
-
-    @Column(name = "delay_days", nullable = false)
-    @Builder.Default
-    private Integer delayDays = 0;
 
     @Column(name = "is_final_step", nullable = false)
     @Builder.Default
@@ -48,8 +38,11 @@ public class ChaseSequence extends BaseEntity {
     @Column(name = "ai_personalisation_guidance", columnDefinition = "TEXT")
     private String aiPersonalisationGuidance;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "template_id")
+    private Template template;
+
     @Column(nullable = false)
     @Builder.Default
     private Boolean deleted = false;
-
 }

@@ -24,5 +24,5 @@ public class ServiceResponse {
     private Integer sortOrder;
     private LocalDateTime timeCreated;
     private LocalDateTime timeUpdated;
-    private List<ChaseSequenceResponse> sequences;
+    private List<ServiceChannelResponse> channels;
 }

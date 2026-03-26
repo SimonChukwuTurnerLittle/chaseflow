@@ -115,13 +115,17 @@ public class AiDraftService {
     @Transactional
     public AiDraft generateDraft(Opportunity opportunity, Template template, TemplateType channel,
                                   List<Activity> activityHistory, ContactDetails contact,
-                                  String serviceName, int stepNumber, String aiGuidance) {
+                                  String serviceName, int stepNumber,
+                                  String stepGuidance, String leadGuidance) {
+        // Combine step-level AI guidance with opportunity-level lead context
+        String combinedGuidance = buildCombinedGuidance(stepGuidance, leadGuidance);
+
         ClaudeApiClient.AiGeneratedContent generated = claudeApiClient.generateChaseMessage(
                 contact.getLead().getFirstName(),
                 serviceName,
                 opportunity.getTemperature().name(),
                 stepNumber,
-                aiGuidance,
+                combinedGuidance,
                 channel,
                 activityHistory
         );
@@ -158,6 +162,18 @@ public class AiDraftService {
                 twilioWhatsAppClient.sendWhatsApp(contact.getWhatsapp(), draft.getContent());
             }
         }
+    }
+
+    private String buildCombinedGuidance(String stepGuidance, String leadGuidance) {
+        StringBuilder sb = new StringBuilder();
+        if (stepGuidance != null && !stepGuidance.isBlank()) {
+            sb.append("Step guidance: ").append(stepGuidance);
+        }
+        if (leadGuidance != null && !leadGuidance.isBlank()) {
+            if (!sb.isEmpty()) sb.append("\n\n");
+            sb.append("Lead context: ").append(leadGuidance);
+        }
+        return sb.isEmpty() ? null : sb.toString();
     }
 
     private AiDraft findDraftById(UUID id) {

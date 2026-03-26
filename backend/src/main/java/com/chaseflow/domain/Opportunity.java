@@ -1,5 +1,6 @@
 package com.chaseflow.domain;
 
+import com.chaseflow.domain.enums.ChaseChannel;
 import com.chaseflow.domain.enums.OpportunityStatus;
 import com.chaseflow.domain.enums.Temperature;
 import jakarta.persistence.*;
@@ -33,52 +34,47 @@ public class Opportunity extends BaseEntity {
     @JoinColumn(name = "service_id")
     private Service service;
 
-    @Column(name = "date_added", nullable = false, updatable = false)
-    private LocalDateTime dateAdded;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @Builder.Default
-    private OpportunityStatus status = OpportunityStatus.ACTIVE;
-
-    private String category;
-
     @Column(name = "service_name")
     private String serviceName;
 
-    @Column(name = "chase_technique")
-    private String chaseTechnique;
+    @Enumerated(EnumType.STRING)
+    private ChaseChannel channel;
 
-    @Column(name = "chase_method")
-    private String chaseMethod;
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private Temperature temperature = Temperature.MEDIUM;
+
+    @Column(name = "current_step", nullable = false)
+    @Builder.Default
+    private Integer currentStep = 1;
+
+    @Column(name = "next_chase_date")
+    private LocalDate nextChaseDate;
+
+    @Column(name = "ai_guidance_context", columnDefinition = "TEXT")
+    private String aiGuidanceContext;
 
     private String stage;
 
     @Column(name = "stage_date")
     private LocalDate stageDate;
 
-    @Column(name = "next_chase_date")
-    private LocalDate nextChaseDate;
-
-    @Column(name = "current_step", nullable = false)
-    @Builder.Default
-    private Integer currentStep = 1;
-
-    @Enumerated(EnumType.STRING)
-    @Builder.Default
-    private Temperature temperature = Temperature.MEDIUM;
-
     @Column(name = "opportunity_type")
     private String opportunityType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private OpportunityStatus status = OpportunityStatus.ACTIVE;
 
     @Column(columnDefinition = "TEXT")
     private String notes;
 
+    @Column(name = "date_added", nullable = false, updatable = false)
+    private LocalDateTime dateAdded;
+
     @Column(name = "date_completed")
     private LocalDateTime dateCompleted;
-
-    @Column(name = "sequence_snapshot", columnDefinition = "JSON")
-    private String sequenceSnapshot;
 
     @Column(nullable = false)
     @Builder.Default

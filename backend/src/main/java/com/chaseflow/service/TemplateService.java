@@ -4,7 +4,6 @@ import com.chaseflow.domain.Template;
 import com.chaseflow.domain.enums.ContentFormat;
 import com.chaseflow.domain.enums.TemplateType;
 import com.chaseflow.domain.enums.UserRole;
-import com.chaseflow.dto.request.TemplateAssignRequest;
 import com.chaseflow.dto.request.TemplateRequest;
 import com.chaseflow.dto.response.TemplateResponse;
 import com.chaseflow.exception.AccessDeniedException;
@@ -18,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -38,9 +36,10 @@ public class TemplateService {
     }
 
     @Transactional(readOnly = true)
-    public List<TemplateResponse> listUnassignedTemplates(UUID serviceId) {
+    public List<TemplateResponse> listTemplatesByType(UUID serviceId, String type) {
         findServiceAndVerifyTenant(serviceId);
-        return templateRepository.findByServiceIdAndStepNumberIsNull(serviceId).stream()
+        TemplateType templateType = TemplateType.valueOf(type.toUpperCase());
+        return templateRepository.findByServiceIdAndTemplateType(serviceId, templateType).stream()
                 .map(this::toResponse)
                 .toList();
     }
@@ -59,13 +58,12 @@ public class TemplateService {
 
         Template template = Template.builder()
                 .service(service)
-                .stepNumber(null)
                 .templateType(type)
                 .templateTitle(request.getTemplateTitle())
                 .templateDescription(request.getTemplateDescription())
                 .subject(request.getSubject())
                 .templateContent(request.getTemplateContent())
-                .templateContentFormat(resolveFormat(type, request))
+                .templateContentFormat(resolveFormat(type))
                 .createdBy(tenantContext.currentUsername())
                 .build();
 
@@ -74,7 +72,7 @@ public class TemplateService {
     }
 
     @Transactional
-    public TemplateResponse updateTemplateById(UUID serviceId, UUID templateId, TemplateRequest request) {
+    public TemplateResponse updateTemplate(UUID serviceId, UUID templateId, TemplateRequest request) {
         assertAdmin();
         findServiceAndVerifyTenant(serviceId);
         Template template = findTemplateAndVerifyService(serviceId, templateId);
@@ -85,7 +83,7 @@ public class TemplateService {
         template.setTemplateDescription(request.getTemplateDescription());
         template.setSubject(request.getSubject());
         template.setTemplateContent(request.getTemplateContent());
-        template.setTemplateContentFormat(resolveFormat(template.getTemplateType(), request));
+        template.setTemplateContentFormat(resolveFormat(template.getTemplateType()));
         template.setUpdatedBy(tenantContext.currentUsername());
 
         template = templateRepository.save(template);
@@ -100,7 +98,6 @@ public class TemplateService {
 
         Template copy = Template.builder()
                 .service(service)
-                .stepNumber(null)
                 .templateType(source.getTemplateType())
                 .templateTitle(source.getTemplateTitle() != null ? source.getTemplateTitle() + " (Copy)" : "Copy")
                 .templateDescription(source.getTemplateDescription())
@@ -115,84 +112,17 @@ public class TemplateService {
     }
 
     @Transactional
-    public TemplateResponse assignTemplate(UUID serviceId, UUID templateId, TemplateAssignRequest request) {
-        assertAdmin();
-        findServiceAndVerifyTenant(serviceId);
-        Template template = findTemplateAndVerifyService(serviceId, templateId);
-
-        if (request.getStepNumber() == null) {
-            throw new ValidationException("Step number is required for assignment");
-        }
-
-        // Check no other template of same type is already assigned to this step
-        Optional<Template> existing = templateRepository
-                .findByServiceIdAndStepNumberAndTemplateType(serviceId, request.getStepNumber(), template.getTemplateType());
-        if (existing.isPresent() && !existing.get().getId().equals(templateId)) {
-            throw new ValidationException("A " + template.getTemplateType().name()
-                    + " template is already assigned to step " + request.getStepNumber());
-        }
-
-        template.setStepNumber(request.getStepNumber());
-        template.setUpdatedBy(tenantContext.currentUsername());
-        template = templateRepository.save(template);
-        return toResponse(template);
-    }
-
-    @Transactional
-    public TemplateResponse unassignTemplate(UUID serviceId, UUID templateId) {
-        assertAdmin();
-        findServiceAndVerifyTenant(serviceId);
-        Template template = findTemplateAndVerifyService(serviceId, templateId);
-
-        template.setStepNumber(null);
-        template.setUpdatedBy(tenantContext.currentUsername());
-        template = templateRepository.save(template);
-        return toResponse(template);
-    }
-
-    @Transactional
     public void deleteTemplate(UUID serviceId, UUID templateId) {
         assertAdmin();
         findServiceAndVerifyTenant(serviceId);
         Template template = findTemplateAndVerifyService(serviceId, templateId);
-
         template.setDeleted(true);
         templateRepository.save(template);
     }
 
-    // Keep for backward compatibility
-    @Transactional
-    public TemplateResponse upsertTemplate(UUID serviceId, Integer stepNumber, String channel, TemplateRequest request) {
-        assertAdmin();
-        com.chaseflow.domain.Service service = findServiceAndVerifyTenant(serviceId);
-        TemplateType type = TemplateType.valueOf(channel.toUpperCase());
-
-        validateTemplateContent(type, request);
-
-        Template template = templateRepository.findByServiceIdAndStepNumberAndTemplateType(serviceId, stepNumber, type)
-                .orElse(Template.builder()
-                        .service(service)
-                        .stepNumber(stepNumber)
-                        .templateType(type)
-                        .createdBy(tenantContext.currentUsername())
-                        .build());
-
-        template.setTemplateTitle(request.getTemplateTitle());
-        template.setTemplateDescription(request.getTemplateDescription());
-        template.setSubject(request.getSubject());
-        template.setTemplateContent(request.getTemplateContent());
-        template.setTemplateContentFormat(resolveFormat(type, request));
-        template.setUpdatedBy(tenantContext.currentUsername());
-
-        template = templateRepository.save(template);
-        return toResponse(template);
-    }
-
     private void validateTemplateContent(TemplateType type, TemplateRequest request) {
         switch (type) {
-            case EMAIL -> {
-                // Subject validation only required if content is being set
-            }
+            case EMAIL -> {}
             case SMS -> {
                 if (request.getTemplateContent() != null && request.getTemplateContent().length() > 160) {
                     throw new ValidationException("SMS template content must not exceed 160 characters");
@@ -206,7 +136,7 @@ public class TemplateService {
         }
     }
 
-    private ContentFormat resolveFormat(TemplateType type, TemplateRequest request) {
+    private ContentFormat resolveFormat(TemplateType type) {
         return switch (type) {
             case EMAIL -> ContentFormat.HTML;
             case SMS, WHATSAPP -> ContentFormat.TEXT;
@@ -237,7 +167,6 @@ public class TemplateService {
         return TemplateResponse.builder()
                 .id(t.getId())
                 .serviceId(t.getService().getId())
-                .stepNumber(t.getStepNumber())
                 .templateTitle(t.getTemplateTitle())
                 .templateDescription(t.getTemplateDescription())
                 .templateType(t.getTemplateType().name())
@@ -249,7 +178,6 @@ public class TemplateService {
                 .timeUpdated(t.getTimeUpdated())
                 .createdBy(t.getCreatedBy())
                 .updatedBy(t.getUpdatedBy())
-                .assigned(t.getStepNumber() != null)
                 .build();
     }
 }

@@ -22,9 +22,6 @@ public class Template extends BaseEntity {
     @JoinColumn(name = "service_id", nullable = false)
     private Service service;
 
-    @Column(name = "step_number")
-    private Integer stepNumber;
-
     @Column(name = "template_title")
     private String templateTitle;
 

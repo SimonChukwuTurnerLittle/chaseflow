@@ -1,7 +1,6 @@
 package com.chaseflow.repository;
 
 import com.chaseflow.domain.ChaseSequence;
-import com.chaseflow.domain.enums.Temperature;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -9,7 +8,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ChaseSequenceRepository extends JpaRepository<ChaseSequence, UUID> {
-    List<ChaseSequence> findByServiceIdOrderByTemperatureAscStepNumberAsc(UUID serviceId);
-    List<ChaseSequence> findByServiceIdAndTemperatureOrderByStepNumberAsc(UUID serviceId, Temperature temperature);
-    Optional<ChaseSequence> findByServiceIdAndTemperatureAndStepNumber(UUID serviceId, Temperature temperature, Integer stepNumber);
+    List<ChaseSequence> findByServiceChannelIdOrderByStepNumberAsc(UUID serviceChannelId);
+    Optional<ChaseSequence> findByServiceChannelIdAndStepNumber(UUID serviceChannelId, Integer stepNumber);
 }

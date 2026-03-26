@@ -1,6 +1,7 @@
 package com.chaseflow.controller;
 
 import com.chaseflow.domain.Tenant;
+import com.chaseflow.domain.TenantConfig;
 import com.chaseflow.domain.UserAccount;
 import com.chaseflow.domain.enums.UserRole;
 import com.chaseflow.exception.AccessDeniedException;
@@ -8,6 +9,7 @@ import com.chaseflow.exception.NotFoundException;
 import com.chaseflow.exception.ValidationException;
 import com.chaseflow.repository.TenantRepository;
 import com.chaseflow.repository.UserAccountRepository;
+import com.chaseflow.service.TenantConfigService;
 import com.chaseflow.tenant.TenantContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +27,7 @@ public class SettingsController {
     private final TenantRepository tenantRepository;
     private final UserAccountRepository userAccountRepository;
     private final PasswordEncoder passwordEncoder;
+    private final TenantConfigService tenantConfigService;
     private final TenantContext tenantContext;
 
     // ── Account ──
@@ -163,6 +166,22 @@ public class SettingsController {
         user.setDeleted(true);
         userAccountRepository.save(user);
         return ResponseEntity.ok(Map.of("message", "User deactivated"));
+    }
+
+    // ── Chase Config ──
+
+    @GetMapping("/chase-config")
+    public ResponseEntity<TenantConfig.ChaseConfig> getChaseConfig() {
+        assertHandler();
+        return ResponseEntity.ok(tenantConfigService.getConfig().getChase());
+    }
+
+    @PutMapping("/chase-config")
+    @Transactional
+    public ResponseEntity<TenantConfig.ChaseConfig> updateChaseConfig(
+            @RequestBody TenantConfig.ChaseConfig chaseConfig) {
+        assertAdmin();
+        return ResponseEntity.ok(tenantConfigService.updateChaseConfig(chaseConfig));
     }
 
     // ── Password ──

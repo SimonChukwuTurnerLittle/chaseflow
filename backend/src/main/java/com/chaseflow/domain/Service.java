@@ -69,7 +69,7 @@ public class Service extends BaseEntity {
 
     @OneToMany(mappedBy = "service", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<ChaseSequence> chaseSequences = new ArrayList<>();
+    private List<ServiceChannel> channels = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {

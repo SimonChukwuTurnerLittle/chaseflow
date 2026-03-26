@@ -11,7 +11,6 @@ import java.util.UUID;
 public class TemplateResponse {
     private UUID id;
     private UUID serviceId;
-    private Integer stepNumber;
     private String templateTitle;
     private String templateDescription;
     private String templateType;
@@ -23,5 +22,4 @@ public class TemplateResponse {
     private LocalDateTime timeUpdated;
     private String createdBy;
     private String updatedBy;
-    private Boolean assigned;
 }

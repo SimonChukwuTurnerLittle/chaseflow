@@ -2,13 +2,14 @@ package com.chaseflow.dto.request;
 
 import lombok.Data;
 
+import java.util.UUID;
+
 @Data
 public class ChaseSequenceRequest {
-    private String temperature;
     private Integer stepNumber;
-    private Integer delayDays;
     private Boolean isFinalStep;
     private Boolean stopOnReply;
     private Boolean useAiPersonalisation;
     private String aiPersonalisationGuidance;
+    private UUID templateId;
 }

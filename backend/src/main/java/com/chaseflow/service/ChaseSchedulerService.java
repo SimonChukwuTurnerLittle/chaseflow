@@ -1,18 +1,13 @@
 package com.chaseflow.service;
 
 import com.chaseflow.domain.*;
+import com.chaseflow.domain.enums.ChaseChannel;
 import com.chaseflow.domain.enums.OpportunityStatus;
 import com.chaseflow.domain.enums.TemplateType;
 import com.chaseflow.integration.SesEmailClient;
 import com.chaseflow.integration.TwilioSmsClient;
 import com.chaseflow.integration.TwilioWhatsAppClient;
-import com.chaseflow.repository.ActivityRepository;
-import com.chaseflow.repository.ChaseSequenceRepository;
-import com.chaseflow.repository.OpportunityRepository;
-import com.chaseflow.repository.TemplateRepository;
-import com.chaseflow.repository.TenantRepository;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.chaseflow.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -31,15 +26,15 @@ import java.util.UUID;
 public class ChaseSchedulerService {
 
     private final OpportunityRepository opportunityRepository;
+    private final ServiceChannelRepository serviceChannelRepository;
     private final ChaseSequenceRepository chaseSequenceRepository;
     private final ActivityRepository activityRepository;
-    private final TemplateRepository templateRepository;
     private final TenantRepository tenantRepository;
+    private final TenantConfigService tenantConfigService;
     private final AiDraftService aiDraftService;
     private final SesEmailClient sesEmailClient;
     private final TwilioSmsClient twilioSmsClient;
     private final TwilioWhatsAppClient twilioWhatsAppClient;
-    private final ObjectMapper objectMapper;
 
     @Scheduled(cron = "0 0 8 * * *")
     @Transactional
@@ -66,24 +61,42 @@ public class ChaseSchedulerService {
         }
 
         UUID serviceId = opp.getService().getId();
+        ChaseChannel channel = opp.getChannel();
         int currentStep = opp.getCurrentStep();
+
+        if (channel == null) {
+            log.warn("Opportunity {} has no channel, skipping", opp.getId());
+            return;
+        }
+
+        // Find the ServiceChannel for this opportunity's service + channel
+        Optional<ServiceChannel> channelOpt = serviceChannelRepository
+                .findByServiceIdAndChannel(serviceId, channel);
+
+        if (channelOpt.isEmpty()) {
+            log.warn("No service channel found for service={}, channel={}", serviceId, channel);
+            return;
+        }
+
+        ServiceChannel serviceChannel = channelOpt.get();
 
         // Find matching chase sequence step
         Optional<ChaseSequence> seqOpt = chaseSequenceRepository
-                .findByServiceIdAndTemperatureAndStepNumber(serviceId, opp.getTemperature(), currentStep);
+                .findByServiceChannelIdAndStepNumber(serviceChannel.getId(), currentStep);
 
         if (seqOpt.isEmpty()) {
-            log.warn("No chase sequence found for service={}, temp={}, step={}",
-                    serviceId, opp.getTemperature(), currentStep);
+            log.warn("No chase sequence found for serviceChannel={}, step={}",
+                    serviceChannel.getId(), currentStep);
             return;
         }
 
         ChaseSequence seq = seqOpt.get();
 
-        // Find the preferred template — try EMAIL first, then SMS, then WHATSAPP
-        Template template = findPreferredTemplate(serviceId, currentStep);
+        // Template comes directly from the chase sequence
+        Template template = seq.getTemplate();
         if (template == null) {
-            log.warn("No template found for sequence {}", seq.getId());
+            log.warn("No template linked to sequence step {} for serviceChannel {}",
+                    currentStep, serviceChannel.getId());
             return;
         }
 
@@ -98,9 +111,10 @@ public class ChaseSchedulerService {
 
         if (seq.getUseAiPersonalisation()) {
             // Generate AI draft — will be reviewed by user
-            AiDraft draft = aiDraftService.generateDraft(opp, template, template.getTemplateType(),
+            TemplateType templateType = toTemplateType(channel);
+            AiDraft draft = aiDraftService.generateDraft(opp, template, templateType,
                     activityHistory, contact, opp.getServiceName(), currentStep,
-                    seq.getAiPersonalisationGuidance());
+                    seq.getAiPersonalisationGuidance(), opp.getAiGuidanceContext());
             log.info("AI draft {} created for opportunity {}", draft.getId(), opp.getId());
 
             // Notify assigned user via email
@@ -112,13 +126,13 @@ public class ChaseSchedulerService {
                     template.getTemplateContent(), opp.getLead(), contact,
                     opp.getService(), opp, tenant, activityHistory);
 
-            sendMessage(template.getTemplateType(), contact, template.getSubject(), resolvedContent);
+            sendMessage(channel, contact, template.getSubject(), resolvedContent);
 
             // Log activity
             Activity activity = Activity.builder()
                     .opportunity(opp)
-                    .description("Auto-sent " + template.getTemplateType().name().toLowerCase() + " (step " + currentStep + ")")
-                    .templateType(template.getTemplateType())
+                    .description("Auto-sent " + channel.name().toLowerCase() + " (step " + currentStep + ")")
+                    .templateType(toTemplateType(channel))
                     .contentSent(resolvedContent)
                     .aiGenerated(false)
                     .user("system")
@@ -138,28 +152,25 @@ public class ChaseSchedulerService {
             }
         } else {
             opp.setCurrentStep(currentStep + 1);
-            // Find next step's delay
-            chaseSequenceRepository.findByServiceIdAndTemperatureAndStepNumber(
-                    serviceId, opp.getTemperature(), currentStep + 1
-            ).ifPresent(nextSeq -> opp.setNextChaseDate(LocalDate.now().plusDays(nextSeq.getDelayDays())));
+            // Next chase date from TenantConfig delay days
+            LocalDate nextDate = tenantConfigService.getNextChaseDate(
+                    opp.getTenantId(), opp.getTemperature());
+            opp.setNextChaseDate(nextDate);
         }
 
         opportunityRepository.save(opp);
     }
 
-    private Template findPreferredTemplate(UUID serviceId, int stepNumber) {
-        List<Template> templates = templateRepository.findByServiceIdAndStepNumber(serviceId, stepNumber);
-        // Prefer EMAIL, then SMS, then WHATSAPP
-        return templates.stream()
-                .filter(t -> t.getTemplateType() == TemplateType.EMAIL)
-                .findFirst()
-                .or(() -> templates.stream().filter(t -> t.getTemplateType() == TemplateType.SMS).findFirst())
-                .or(() -> templates.stream().filter(t -> t.getTemplateType() == TemplateType.WHATSAPP).findFirst())
-                .orElse(null);
+    private TemplateType toTemplateType(ChaseChannel channel) {
+        return switch (channel) {
+            case EMAIL -> TemplateType.EMAIL;
+            case SMS -> TemplateType.SMS;
+            case WHATSAPP -> TemplateType.WHATSAPP;
+        };
     }
 
-    private void sendMessage(TemplateType type, ContactDetails contact, String subject, String content) {
-        switch (type) {
+    private void sendMessage(ChaseChannel channel, ContactDetails contact, String subject, String content) {
+        switch (channel) {
             case EMAIL -> {
                 if (contact.getEmail() != null && !contact.getEmail().isBlank()) {
                     sesEmailClient.sendEmail(contact.getEmail(), subject, content);
@@ -200,12 +211,10 @@ public class ChaseSchedulerService {
                 .lead(opp.getLead())
                 .service(opp.getService())
                 .serviceName(opp.getServiceName())
-                .category(opp.getCategory())
-                .chaseTechnique(opp.getChaseTechnique())
-                .chaseMethod(opp.getChaseMethod())
+                .channel(opp.getChannel())
                 .temperature(opp.getTemperature())
                 .opportunityType(opp.getOpportunityType())
-                .sequenceSnapshot(opp.getSequenceSnapshot())
+                .aiGuidanceContext(opp.getAiGuidanceContext())
                 .currentStep(1)
                 .status(OpportunityStatus.ACTIVE)
                 .nextChaseDate(LocalDate.now().plusDays(opp.getService().getRecurrenceDays()))

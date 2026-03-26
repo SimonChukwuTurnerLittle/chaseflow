@@ -2,21 +2,19 @@ package com.chaseflow.service;
 
 import com.chaseflow.domain.ChaseSequence;
 import com.chaseflow.domain.ServiceCategory;
+import com.chaseflow.domain.ServiceChannel;
+import com.chaseflow.domain.enums.ChaseChannel;
 import com.chaseflow.domain.enums.ServiceMode;
 import com.chaseflow.domain.enums.Temperature;
 import com.chaseflow.domain.enums.UserRole;
 import com.chaseflow.dto.request.ServiceCategoryRequest;
 import com.chaseflow.dto.request.ServiceRequest;
-import com.chaseflow.dto.response.ChaseSequenceResponse;
-import com.chaseflow.dto.response.ServiceCategoryResponse;
-import com.chaseflow.dto.response.ServiceResponse;
-import com.chaseflow.dto.response.TemplateResponse;
+import com.chaseflow.dto.response.*;
 import com.chaseflow.exception.AccessDeniedException;
 import com.chaseflow.exception.NotFoundException;
 import com.chaseflow.exception.ValidationException;
 import com.chaseflow.repository.ServiceCategoryRepository;
 import com.chaseflow.repository.ServiceRepository;
-import com.chaseflow.repository.TemplateRepository;
 import com.chaseflow.tenant.TenantContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,7 +29,6 @@ public class ServiceManagementService {
 
     private final ServiceRepository serviceRepository;
     private final ServiceCategoryRepository serviceCategoryRepository;
-    private final TemplateRepository templateRepository;
     private final TenantContext tenantContext;
 
     // ── Service Categories ──
@@ -91,7 +88,7 @@ public class ServiceManagementService {
 
     @Transactional(readOnly = true)
     public ServiceResponse getService(UUID id) {
-        return toServiceResponseWithSequences(findServiceByIdAndTenant(id));
+        return toServiceResponseWithChannels(findServiceByIdAndTenant(id));
     }
 
     @Transactional
@@ -124,11 +121,17 @@ public class ServiceManagementService {
 
         service = serviceRepository.save(service);
 
-        List<ChaseSequence> sequences = ChaseDefaults.seedSequences(service);
-        service.getChaseSequences().addAll(sequences);
+        // Create default EMAIL channel with seeded sequences
+        ServiceChannel emailChannel = ServiceChannel.builder()
+                .service(service)
+                .channel(ChaseChannel.EMAIL)
+                .build();
+        List<ChaseSequence> sequences = ChaseDefaults.seedSequences(emailChannel);
+        emailChannel.getChaseSequences().addAll(sequences);
+        service.getChannels().add(emailChannel);
         service = serviceRepository.save(service);
 
-        return toServiceResponseWithSequences(service);
+        return toServiceResponseWithChannels(service);
     }
 
     @Transactional
@@ -158,7 +161,7 @@ public class ServiceManagementService {
         }
 
         service = serviceRepository.save(service);
-        return toServiceResponseWithSequences(service);
+        return toServiceResponseWithChannels(service);
     }
 
     @Transactional
@@ -223,34 +226,29 @@ public class ServiceManagementService {
                 .build();
     }
 
-    ServiceResponse toServiceResponseWithSequences(com.chaseflow.domain.Service s) {
+    ServiceResponse toServiceResponseWithChannels(com.chaseflow.domain.Service s) {
         ServiceResponse resp = toServiceResponse(s);
-        resp.setSequences(s.getChaseSequences().stream()
-                .map(seq -> ChaseSequenceResponse.builder()
-                        .id(seq.getId())
+        resp.setChannels(s.getChannels().stream()
+                .map(ch -> ServiceChannelResponse.builder()
+                        .id(ch.getId())
                         .serviceId(s.getId())
-                        .temperature(seq.getTemperature().name())
-                        .stepNumber(seq.getStepNumber())
-                        .delayDays(seq.getDelayDays())
-                        .isFinalStep(seq.getIsFinalStep())
-                        .stopOnReply(seq.getStopOnReply())
-                        .templates(templateRepository.findByServiceIdAndStepNumber(s.getId(), seq.getStepNumber()).stream()
-                                .map(t -> TemplateResponse.builder()
-                                        .id(t.getId())
-                                        .serviceId(s.getId())
-                                        .stepNumber(t.getStepNumber())
-                                        .templateTitle(t.getTemplateTitle())
-                                        .templateDescription(t.getTemplateDescription())
-                                        .templateType(t.getTemplateType().name())
-                                        .subject(t.getSubject())
-                                        .templateContent(t.getTemplateContent())
-                                        .templateContentFormat(t.getTemplateContentFormat().name())
-                                        .version(t.getVersion())
-                                        .timeCreated(t.getTimeCreated())
-                                        .timeUpdated(t.getTimeUpdated())
-                                        .createdBy(t.getCreatedBy())
-                                        .updatedBy(t.getUpdatedBy())
-                                        .assigned(t.getStepNumber() != null)
+                        .channel(ch.getChannel().name())
+                        .sequences(ch.getChaseSequences().stream()
+                                .map(seq -> ChaseSequenceResponse.builder()
+                                        .id(seq.getId())
+                                        .serviceChannelId(ch.getId())
+                                        .channel(ch.getChannel().name())
+                                        .stepNumber(seq.getStepNumber())
+                                        .isFinalStep(seq.getIsFinalStep())
+                                        .stopOnReply(seq.getStopOnReply())
+                                        .useAiPersonalisation(seq.getUseAiPersonalisation())
+                                        .aiPersonalisationGuidance(seq.getAiPersonalisationGuidance())
+                                        .template(seq.getTemplate() != null ? TemplateResponse.builder()
+                                                .id(seq.getTemplate().getId())
+                                                .serviceId(s.getId())
+                                                .templateTitle(seq.getTemplate().getTemplateTitle())
+                                                .templateType(seq.getTemplate().getTemplateType().name())
+                                                .build() : null)
                                         .build())
                                 .toList())
                         .build())

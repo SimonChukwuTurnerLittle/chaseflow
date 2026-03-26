@@ -9,12 +9,11 @@ import java.util.UUID;
 public class OpportunityRequest {
     private UUID leadId;
     private UUID serviceId;
-    private String category;
-    private String chaseTechnique;
-    private String chaseMethod;
-    private String stage;
+    private String channel;
     private String temperature;
+    private String stage;
     private String opportunityType;
+    private String aiGuidanceContext;
     private String notes;
     private LocalDate nextChaseDate;
 }

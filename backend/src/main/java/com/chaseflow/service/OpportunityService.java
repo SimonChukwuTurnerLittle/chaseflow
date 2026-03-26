@@ -1,6 +1,7 @@
 package com.chaseflow.service;
 
 import com.chaseflow.domain.*;
+import com.chaseflow.domain.enums.ChaseChannel;
 import com.chaseflow.domain.enums.OpportunityStatus;
 import com.chaseflow.domain.enums.Temperature;
 import com.chaseflow.domain.enums.UserRole;
@@ -8,13 +9,11 @@ import com.chaseflow.dto.request.OpportunityRequest;
 import com.chaseflow.dto.response.OpportunityResponse;
 import com.chaseflow.exception.AccessDeniedException;
 import com.chaseflow.exception.NotFoundException;
-import com.chaseflow.repository.ChaseSequenceRepository;
 import com.chaseflow.repository.LeadRepository;
 import com.chaseflow.repository.OpportunityRepository;
 import com.chaseflow.repository.ServiceRepository;
+import com.chaseflow.repository.TenantConfigRepository;
 import com.chaseflow.tenant.TenantContext;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,9 +31,8 @@ public class OpportunityService {
     private final OpportunityRepository opportunityRepository;
     private final LeadRepository leadRepository;
     private final ServiceRepository serviceRepository;
-    private final ChaseSequenceRepository chaseSequenceRepository;
+    private final TenantConfigRepository tenantConfigRepository;
     private final TenantContext tenantContext;
-    private final ObjectMapper objectMapper;
 
     @Transactional
     public OpportunityResponse createOpportunity(OpportunityRequest request) {
@@ -50,16 +48,18 @@ public class OpportunityService {
         Temperature temp = request.getTemperature() != null
                 ? Temperature.valueOf(request.getTemperature()) : Temperature.MEDIUM;
 
+        ChaseChannel channel = request.getChannel() != null
+                ? ChaseChannel.valueOf(request.getChannel()) : null;
+
         Opportunity opportunity = Opportunity.builder()
                 .tenantId(tenantId)
                 .lead(lead)
-                .category(request.getCategory())
-                .chaseTechnique(request.getChaseTechnique())
-                .chaseMethod(request.getChaseMethod())
+                .channel(channel)
+                .temperature(temp)
                 .stage(request.getStage())
                 .stageDate(LocalDate.now())
-                .temperature(temp)
                 .opportunityType(request.getOpportunityType())
+                .aiGuidanceContext(request.getAiGuidanceContext())
                 .notes(request.getNotes())
                 .currentStep(1)
                 .status(OpportunityStatus.ACTIVE)
@@ -71,26 +71,17 @@ public class OpportunityService {
             opportunity.setService(service);
             opportunity.setServiceName(service.getServiceName());
 
-            // Snapshot sequences as JSON
-            List<ChaseSequence> sequences = chaseSequenceRepository
-                    .findByServiceIdOrderByTemperatureAscStepNumberAsc(service.getId());
-            try {
-                List<SequenceSnapshotEntry> snapshot = sequences.stream()
-                        .map(s -> new SequenceSnapshotEntry(
-                                s.getTemperature().name(), s.getStepNumber(), s.getDelayDays(),
-                                s.getIsFinalStep(), s.getStopOnReply()))
-                        .toList();
-                opportunity.setSequenceSnapshot(objectMapper.writeValueAsString(snapshot));
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException("Failed to serialize sequence snapshot", e);
+            // Calculate nextChaseDate from TenantConfig
+            if (request.getNextChaseDate() == null) {
+                TenantConfig config = tenantConfigRepository.findByTenantId(tenantId).orElse(null);
+                if (config != null) {
+                    int delayDays = config.getDelayDaysForTemperature(temp);
+                    opportunity.setNextChaseDate(LocalDate.now().plusDays(delayDays));
+                }
             }
-
-            // Set next chase date from step 1 delay
-            chaseSequenceRepository.findByServiceIdAndTemperatureAndStepNumber(service.getId(), temp, 1)
-                    .ifPresent(step1 -> opportunity.setNextChaseDate(LocalDate.now().plusDays(step1.getDelayDays())));
         }
 
-        // Allow explicit nextChaseDate from request to override sequence-derived value
+        // Allow explicit nextChaseDate to override
         if (request.getNextChaseDate() != null) {
             opportunity.setNextChaseDate(request.getNextChaseDate());
         }
@@ -139,14 +130,16 @@ public class OpportunityService {
     public OpportunityResponse updateOpportunity(UUID id, OpportunityRequest request) {
         assertWriteAccess();
         Opportunity opp = findByIdAndTenant(id);
-        opp.setCategory(request.getCategory());
-        opp.setChaseTechnique(request.getChaseTechnique());
-        opp.setChaseMethod(request.getChaseMethod());
+
+        if (request.getChannel() != null) {
+            opp.setChannel(ChaseChannel.valueOf(request.getChannel()));
+        }
         opp.setStage(request.getStage());
         if (request.getTemperature() != null) {
             opp.setTemperature(Temperature.valueOf(request.getTemperature()));
         }
         opp.setOpportunityType(request.getOpportunityType());
+        opp.setAiGuidanceContext(request.getAiGuidanceContext());
         opp.setNotes(request.getNotes());
         opp = opportunityRepository.save(opp);
         return toResponse(opp);
@@ -175,12 +168,9 @@ public class OpportunityService {
                     .lead(opp.getLead())
                     .service(opp.getService())
                     .serviceName(opp.getServiceName())
-                    .category(opp.getCategory())
-                    .chaseTechnique(opp.getChaseTechnique())
-                    .chaseMethod(opp.getChaseMethod())
+                    .channel(opp.getChannel())
                     .temperature(opp.getTemperature())
                     .opportunityType(opp.getOpportunityType())
-                    .sequenceSnapshot(opp.getSequenceSnapshot())
                     .currentStep(1)
                     .status(OpportunityStatus.ACTIVE)
                     .nextChaseDate(LocalDate.now().plusDays(opp.getService().getRecurrenceDays()))
@@ -215,23 +205,19 @@ public class OpportunityService {
                         (o.getLead().getLastName() != null ? o.getLead().getLastName() : ""))
                 .serviceId(o.getService() != null ? o.getService().getId() : null)
                 .serviceName(o.getServiceName())
-                .dateAdded(o.getDateAdded())
-                .status(o.getStatus().name())
-                .category(o.getCategory())
-                .chaseTechnique(o.getChaseTechnique())
-                .chaseMethod(o.getChaseMethod())
+                .channel(o.getChannel() != null ? o.getChannel().name() : null)
+                .temperature(o.getTemperature().name())
+                .currentStep(o.getCurrentStep())
+                .nextChaseDate(o.getNextChaseDate())
+                .aiGuidanceContext(o.getAiGuidanceContext())
                 .stage(o.getStage())
                 .stageDate(o.getStageDate())
-                .nextChaseDate(o.getNextChaseDate())
-                .currentStep(o.getCurrentStep())
-                .temperature(o.getTemperature().name())
                 .opportunityType(o.getOpportunityType())
+                .status(o.getStatus().name())
                 .notes(o.getNotes())
                 .handler(o.getLead().getHandler())
+                .dateAdded(o.getDateAdded())
                 .dateCompleted(o.getDateCompleted())
                 .build();
     }
-
-    record SequenceSnapshotEntry(String temperature, int stepNumber, int delayDays,
-                                  boolean isFinalStep, boolean stopOnReply) {}
 }
